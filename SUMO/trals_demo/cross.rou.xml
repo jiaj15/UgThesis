@@ -1,0 +1,16 @@
+<routes>
+ <vehicles>
+ <flow id="f11" begin="0" end="50" from="1i" to="1o" probability="0.1"/>
+ <flow id="f12" begin="0" end="50" from="1i" to="2o" probability="0.5"/>
+ <flow id="f14" begin="0" end="50" from="1i" to="4o" probability="0.5"/>
+ <flow id="f13" begin="0" end="50" from="1i" to="1o" probability="0.1"/>
+ 
+ <flow id="f22" begin="0" end="50" from="1i" to="1o" probability="0.1"/>
+ <flow id="f21" begin="0" end="50" from="2i" to="1o" probability="0.5"/>
+ <flow id="f23" begin="0" end="50" from="2i" to="1o" probability="0.5"/>
+ 
+ 
+ <flow id="f34" begin="0" end="50" from="3i" to="4o" probability="0.5"/>
+ <flow id="f43" begin="0" end="50" from="4i" to="3o" probability="0.5"/>
+ </vehicles>
+</routes>
