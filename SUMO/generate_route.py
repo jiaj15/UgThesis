@@ -3,6 +3,7 @@ import sys
 import random
 import PARAMETER as p
 
+import numpy as np
 
 random.seed(42)  # make tests reproducible
 
@@ -52,45 +53,46 @@ def generate_routefile():
         lastVeh = 0
         vehNr = 0
         for i in range(N):
+
             # ZHIXING
-            if random.uniform(0, 1) < p.pWE:
+            if random.uniform(0, 1) < 0.1 * np.random.randn() + p.pWE:
                 print >> routes, '    <vehicle id="right_%i" type="SUMO_DEFAULT_TYPE" route="W2E" depart="%i" />' % (
                     vehNr, i)
                 vehNr += 1
                 lastVeh = i
-            if random.uniform(0, 1) < p.pEW:
+            if random.uniform(0, 1) < 0.1 * np.random.randn() + p.pEW:
                 print >> routes, '    <vehicle id="left_%i" type="SUMO_DEFAULT_TYPE" route="E2W" depart="%i" />' % (
                     vehNr, i)
                 vehNr += 1
                 lastVeh = i
-            if random.uniform(0, 1) < p.pNS:
+            if random.uniform(0, 1) < 0.1 * np.random.randn() + p.pNS:
                 print >> routes, '    <vehicle id="down_%i" type="SUMO_DEFAULT_TYPE" route="N2S" depart="%i" color="1,0,0"/>' % (
                     vehNr, i)
                 vehNr += 1
                 lastVeh = i
-            if random.uniform(0, 1) < p.pSN:
+            if random.uniform(0, 1) < 0.1 * np.random.randn() + p.pSN:
                 print >> routes, '    <vehicle id="up_%i" type="SUMO_DEFAULT_TYPE" route="S2N" depart="%i" color="1,0,0"/>' % (
                     vehNr, i)
                 vehNr += 1
                 lastVeh = i
 
             # ZUO ZHUAN
-            if random.uniform(0, 1) < p.pWN:
+            if random.uniform(0, 1) < 0.1 * np.random.randn() + p.pWN:
                 print >> routes, '    <vehicle id="rightLT_%i" type="SUMO_DEFAULT_TYPE" route="W2N" depart="%i" />' % (
                     vehNr, i)
                 vehNr += 1
                 lastVeh = i
-            if random.uniform(0, 1) < p.pNE:
+            if random.uniform(0, 1) < 0.1 * np.random.randn() + p.pNE:
                 print >> routes, '    <vehicle id="leftLT_%i" type="SUMO_DEFAULT_TYPE" route="N2E" depart="%i" />' % (
                     vehNr, i)
                 vehNr += 1
                 lastVeh = i
-            if random.uniform(0, 1) < p.pES:
+            if random.uniform(0, 1) < 0.05 * np.random.randn() + p.pES:
                 print >> routes, '    <vehicle id="downLT_%i" type="SUMO_DEFAULT_TYPE" route="E2S" depart="%i" color="1,0,0"/>' % (
                     vehNr, i)
                 vehNr += 1
                 lastVeh = i
-            if random.uniform(0, 1) < p.pSW:
+            if random.uniform(0, 1) < 0.05 * np.random.randn() + p.pSW:
                 print >> routes, '    <vehicle id="upLT_%i" type="SUMO_DEFAULT_TYPE" route="S2W" depart="%i" color="1,0,0"/>' % (
                     vehNr, i)
                 vehNr += 1

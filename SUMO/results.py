@@ -83,12 +83,25 @@ def PlotResults():
 
 
     # plt.plot(df.mean)
-PlotResults()
 
 
-
-
-
-
-
-
+def csvPlot():
+    cycle = ['5', '10', '15', '20', '25', '30', '35', '40']
+    stand = ['v']
+    path = '/home/jing/PycharmProjects/sumo_demo/UgThesis/SUMO/mean/csv'
+    names = os.listdir(path)
+    flag = True
+    for csv_name in names:
+        data_f = pd.read_csv(path + '/' + csv_name)
+        steps = data_f['step_time']
+        waiting = data_f['step_meanWaitingTime']
+        label = os.path.splitext(csv_name)[0]
+        labels = label.split('v', 1)
+        labela = "cycle = " + labels[1]
+        if labela in cycle:
+            if flag:
+                data = {'steps': steps, labela: waiting}
+                df = pd.DataFrame(data)
+                flag = False
+            else:
+                df[labela] = waiting

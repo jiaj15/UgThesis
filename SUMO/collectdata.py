@@ -218,13 +218,13 @@ def run():
     step = 0
     # we start with phase 2 where EW has green
     traci.trafficlights.setPhase("0", 0)
-    curlight='grrrgrrrgrrrgrrr'
+    curlight = 'gggYgrrrgrrrgrrr'
     while traci.simulation.getMinExpectedNumber() > 0:
-        if step%25==0:
-            nextlight=updateweightGetTraci()
-            #curlight=transTraci(nextlight,curlight) #yellow state
-        else:
-            curlight=nextlight
+        # if step%25==0:
+        #     nextlight=updateweightGetTraci()
+        #     #curlight=transTraci(nextlight,curlight) #yellow state
+        # else:
+        #     curlight=nextlight
         traci.trafficlights.setRedYellowGreenState("0",curlight)
         #traci.trafficlights.setPhase("0", 0)
         #updateweight()

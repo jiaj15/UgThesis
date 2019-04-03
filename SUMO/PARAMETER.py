@@ -15,6 +15,7 @@ pSW = 1. / 30
 # pEN = 1. / 20
 # pNW = 1. / 10
 
+
 PENETRATION_RATE = 9. / 10
 WIDTH = 70
 

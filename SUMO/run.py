@@ -118,6 +118,7 @@ def updateweightWaitingtime():
     print light
     return light
 
+
 def run(cycle,standard):
 
     """execute the TraCI control loop"""
@@ -164,19 +165,19 @@ if __name__ == "__main__":
     # sumoProcess = subprocess.Popen([sumoBinary, "-c", "data/cross.sumocfg", "--tripinfo-output",
     #                                 "tripinfo.xml", "--remote-port", str(PORT)], stdout=sys.stdout, stderr=sys.stderr)
 
-    cycle =[20]
+    cycle = [20, 25, 30]
     stand=['v']
     for i in cycle:
         for j in stand:
             options = get_options()
-
+            name = 'v' + str(i) + '.xml'
 
             if options.nogui:
                 sumoBinary = checkBinary('sumo')
             else:
                 sumoBinary = checkBinary('sumo-gui')
-            sumoProcess = subprocess.Popen([sumoBinary, "-c", "data/cross.sumocfg", "--tripinfo-output",
-                                        "tripinfo.xml", "--remote-port", str(PORT)], stdout=sys.stdout, stderr=sys.stderr)
+            sumoProcess = subprocess.Popen([sumoBinary, "-c", "data/cross.sumocfg", "--summary-output",
+                                            name, "--remote-port", str(PORT)], stdout=sys.stdout, stderr=sys.stderr)
 
             run(i,j)
             # sumoProcess.wait()
