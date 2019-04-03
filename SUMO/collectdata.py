@@ -7,7 +7,8 @@ import subprocess
 import random
 import pandas as pd
 import PARAMETER as p
-
+import graph
+random.seed(42)  # make tests reproducible
 # we need to import python modules from the $SUMO_HOME/tools directory
 try:
     sys.path.append(os.path.join(os.path.dirname(
@@ -25,101 +26,7 @@ import traci
 PORT = 8873
 
 
-def generate_routefile():
-    random.seed(42)  # make tests reproducible
-    N = 3600  # number of time steps
-    # demand per second from different directions
 
-    with open("data/cross.rou.xml", "w") as routes:
-        print >> routes, """<routes>
-        <vType id="SUMO_DEFAULT_TYPE" accel="0.8" decel="4.5" sigma="0" length="5" minGap="2" maxSpeed="70"/>
-       
-        <route id="W2E" edges="51o 1i 2o 52i" />
-        <route id="E2W" edges="52o 2i 1o 51i" />
-        <route id="N2S" edges="54o 4i 3o 53i" />
-        <route id="S2N" edges="53o 3i 4o 54i" />
-        
-        <route id="W2N" edges="51o 1i 4o 54i" />
-        <route id="N2E" edges="54o 4i 2o 52i" />
-        <route id="E2S" edges="52o 2i 3o 53i" />
-        <route id="S2W" edges="53o 3i 1o 51i" />
-        
-        <route id="W2S" edges="51o 1i 3o 53i" />
-        <route id="S2E" edges="53o 3i 2o 52i" />
-        <route id="E2N" edges="52o 2i 4o 54i" />
-        <route id="N2W" edges="54o 4i 1o 51i" />
-        
-        """
-        lastVeh = 0
-        vehNr = 0
-        for i in range(N):
-            # ZHIXING
-            if random.uniform(0, 1) < p.pWE:
-                print >> routes, '    <vehicle id="right_%i" type="SUMO_DEFAULT_TYPE" route="W2E" depart="%i" />' % (
-                    vehNr, i)
-                vehNr += 1
-                lastVeh = i
-            if random.uniform(0, 1) < p.pEW:
-                print >> routes, '    <vehicle id="left_%i" type="SUMO_DEFAULT_TYPE" route="E2W" depart="%i" />' % (
-                    vehNr, i)
-                vehNr += 1
-                lastVeh = i
-            if random.uniform(0, 1) < p.pNS:
-                print >> routes, '    <vehicle id="down_%i" type="SUMO_DEFAULT_TYPE" route="N2S" depart="%i" color="1,0,0"/>' % (
-                    vehNr, i)
-                vehNr += 1
-                lastVeh = i
-            if random.uniform(0, 1) < p.pSN:
-                print >> routes, '    <vehicle id="up_%i" type="SUMO_DEFAULT_TYPE" route="S2N" depart="%i" color="1,0,0"/>' % (
-                    vehNr, i)
-                vehNr += 1
-                lastVeh = i
-
-            # ZUO ZHUAN
-            if random.uniform(0, 1) < p.pWN:
-                print >> routes, '    <vehicle id="rightLT_%i" type="SUMO_DEFAULT_TYPE" route="W2E" depart="%i" />' % (
-                    vehNr, i)
-                vehNr += 1
-                lastVeh = i
-            if random.uniform(0, 1) < p.pNE:
-                print >> routes, '    <vehicle id="leftLT_%i" type="SUMO_DEFAULT_TYPE" route="E2W" depart="%i" />' % (
-                    vehNr, i)
-                vehNr += 1
-                lastVeh = i
-            if random.uniform(0, 1) < p.pES:
-                print >> routes, '    <vehicle id="downLT_%i" type="SUMO_DEFAULT_TYPE" route="N2S" depart="%i" color="1,0,0"/>' % (
-                    vehNr, i)
-                vehNr += 1
-                lastVeh = i
-            if random.uniform(0, 1) < p.pSW:
-                print >> routes, '    <vehicle id="upLT_%i" type="SUMO_DEFAULT_TYPE" route="S2N" depart="%i" color="1,0,0"/>' % (
-                    vehNr, i)
-                vehNr += 1
-                lastVeh = i
-
-            # YOU ZHUAN
-            if random.uniform(0, 1) < p.pWS:
-                print >> routes, '    <vehicle id="rightRL_%i" type="SUMO_DEFAULT_TYPE" route="W2E" depart="%i" />' % (
-                    vehNr, i)
-                vehNr += 1
-                lastVeh = i
-            if random.uniform(0, 1) < p.pSE:
-                print >> routes, '    <vehicle id="leftRL_%i" type="SUMO_DEFAULT_TYPE" route="E2W" depart="%i" />' % (
-                    vehNr, i)
-                vehNr += 1
-                lastVeh = i
-            if random.uniform(0, 1) < p.pEN:
-                print >> routes, '    <vehicle id="downRL_%i" type="SUMO_DEFAULT_TYPE" route="N2S" depart="%i" color="1,0,0"/>' % (
-                    vehNr, i)
-                vehNr += 1
-                lastVeh = i
-            if random.uniform(0, 1) < p.pNW:
-                print >> routes, '    <vehicle id="upRL_%i" type="SUMO_DEFAULT_TYPE" route="S2N" depart="%i" color="1,0,0"/>' % (
-                    vehNr, i)
-                vehNr += 1
-                lastVeh = i
-
-        print >> routes, "</routes>"
 
 
 # The program looks like this
@@ -239,16 +146,90 @@ def output_state(step):
     posm_f = pd.DataFrame({step: ori_velM})
     posm_f.to_csv(filename, mode="a+")
 
+def updateweightGetTraci():
+    #weight=[0, 0, 0, 0, 0, 0, 0, 0, 0]
+    volume=[]
+    volume.append(0)
+
+    volume.append(traci.lane.getLastStepVehicleNumber("4i_2"))
+    volume.append(traci.lane.getLastStepVehicleNumber("4i_1"))
+
+    volume.append(traci.lane.getLastStepVehicleNumber("1i_2"))
+    volume.append(traci.lane.getLastStepVehicleNumber("1i_1"))
+
+    volume.append(traci.lane.getLastStepVehicleNumber("3i_2"))
+    volume.append(traci.lane.getLastStepVehicleNumber("3i_1"))
+
+    volume.append(traci.lane.getLastStepVehicleNumber("2i_2"))
+    volume.append(traci.lane.getLastStepVehicleNumber("2i_1"))
+
+    #
+
+
+    print volume
+
+    orlight = 'grrrgrrrgrrrgrrr'
+    orlight = list(orlight)
+
+    trans = {1:[2,3],2:[1],3:[14,15],4:[13],5:[10,11],6:[9],7:[6,7],8:[5]}
+
+    minst=graph.minst(volume)
+
+    print minst
+
+    for i in minst:
+        for j in trans[i]:
+            orlight[j]='G'
+    light=orlight[0]
+    for k in range(1,len(orlight)):
+        light =light + orlight[k]
+
+
+
+
+    print light
+    return light
+
+def transTraci(light,prelight):
+    light=list(light)
+    prelight=list(prelight)
+    translight=''
+    for i in range(len(light)):
+        if light[i]== prelight[i]:
+            translight=translight+light[i]
+        else:
+            if prelight[i]=='G':
+                translight=translight+'y'
+            else:
+                translight=translight+light[i]
+
+    return translight
+
+
+
+
+
+
+
 
 def run():
     """execute the TraCI control loop"""
     traci.init(PORT)
     step = 0
     # we start with phase 2 where EW has green
-    traci.trafficlights.setPhase("0", 2)
+    traci.trafficlights.setPhase("0", 0)
+    curlight='grrrgrrrgrrrgrrr'
     while traci.simulation.getMinExpectedNumber() > 0:
+        if step%25==0:
+            nextlight=updateweightGetTraci()
+            #curlight=transTraci(nextlight,curlight) #yellow state
+        else:
+            curlight=nextlight
+        traci.trafficlights.setRedYellowGreenState("0",curlight)
+        #traci.trafficlights.setPhase("0", 0)
+        #updateweight()
         traci.simulationStep()
-        output_state(step)
+        # output_state(step)
         # if traci.trafficlights.getPhase("0") == 2:
         #     if step % 500 > 250:
         #         traci.trafficlights.setPhase("0", 3)
@@ -286,7 +267,7 @@ if __name__ == "__main__":
         sumoBinary = checkBinary('sumo-gui')
 
     # first, generate the route file for this simulation
-    generate_routefile()
+    #generate_routefile()
 
     # this is the normal way of using traci. sumo is started as a
     # subprocess and then the python script connects and runs
