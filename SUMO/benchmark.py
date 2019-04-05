@@ -4,10 +4,12 @@ import sys
 import optparse
 import subprocess
 import random
+import run
+import results as rs
 
 random.seed(42)  # make tests reproducible
 # we need to import python modules from the $SUMO_HOME/tools directory
-
+results = []
 
 try:
     sys.path.append(os.path.join(os.path.dirname(
@@ -26,6 +28,7 @@ PORT = 8873
 
 
 def run_bench():
+    global results
     traci.init(PORT)
     step = 0
     # we start with phase 2 where EW has green
@@ -33,6 +36,8 @@ def run_bench():
 
     while traci.simulation.getMinExpectedNumber() > 0:
         traci.simulationStep()
+        print traci.trafficlights.getPhase("0")
+        # run.updateWeight('w')
 
         step += 1
     traci.close()
@@ -48,6 +53,7 @@ def get_options():
 
 
 if __name__ == "__main__":
+
     options = get_options()
     # this script has been called from the command line. It will start sumo as a
     # server, then connect and run
@@ -65,3 +71,4 @@ if __name__ == "__main__":
                                     "tripinfo_va.xml", "--remote-port", str(PORT)], stdout=sys.stdout,
                                    stderr=sys.stderr)
     run_bench()
+    rs.SaveResults(results, 90, 'v')

@@ -47,7 +47,7 @@ def PlotResults():
     flag =True
     for csv_name in names:
         data_f=pd.read_csv(path+'/'+csv_name)
-        waiting= data_f['Average waiting time']
+        waiting = data_f['queue length']
 
         steps=data_f['steps']
         # waitplot=pd.DataFrame(waiting,index=data_f.index)
@@ -62,7 +62,7 @@ def PlotResults():
             flag=False
         else:
             df[label]=waiting
-        mean_dict[labels[0]]=data_f['Average waiting time'].mean()
+        # mean_dict[labels[0]]=data_f['Average waiting time'].mean()
 
 
         # data_f.plot(x='steps',y='Average waiting time')
@@ -74,12 +74,12 @@ def PlotResults():
     plt.legend(label_list)
     plt.show()
 
-    print mean_dict
-    lists=sorted(mean_dict.items())
-    x, y = zip(*lists) # unpack a list of pairs into two tuples
-
-    plt.plot(x, y)
-    plt.show()
+    # print mean_dict
+    # lists=sorted(mean_dict.items())
+    # x, y = zip(*lists) # unpack a list of pairs into two tuples
+    #
+    # plt.plot(x, y)
+    # plt.show()
 
 
     # plt.plot(df.mean)
@@ -105,3 +105,5 @@ def csvPlot():
                 flag = False
             else:
                 df[labela] = waiting
+
+# PlotResults()

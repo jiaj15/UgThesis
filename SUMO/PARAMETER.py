@@ -1,9 +1,9 @@
 # probability of approaching vehicles
 
-pWE = 1. / 9
-pEW = 1. / 10
-pNS = 1. / 9
-pSN = 1. / 10
+pWE = 1. / 3
+pEW = 1. / 3
+pNS = 1. / 30
+pSN = 1. / 30
 
 pWN = 1. / 30
 pNE = 1. / 30
@@ -15,7 +15,7 @@ pSW = 1. / 30
 # pEN = 1. / 20
 # pNW = 1. / 10
 
-
+YELLOW_TIME = 2
 PENETRATION_RATE = 9. / 10
 WIDTH = 70
 

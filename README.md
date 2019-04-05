@@ -46,7 +46,7 @@
 
 #### 0404 
 
-1.  把volume的计算方式改成detector
+1.  把volume的计算方式改成detector,重测
 
 2. all red and yellow time 
 
@@ -54,7 +54,7 @@
 
 4. report: introduction + process + graph + numerical experi
 
-5. 改动流量
+5. 改动流量,然后测试不同的WEIGHT METHOD
     
 ### 数据记录
 

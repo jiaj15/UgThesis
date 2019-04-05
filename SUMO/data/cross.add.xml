@@ -9,4 +9,14 @@
       <phase duration="6"  state="rrrrrrGGrrrrrrGG"/>
       <phase duration="5"  state="rrrrrryyrrrrrryy"/>
    </tlLogic>
+
+   <inductionLoop id="1i_1" lane="1i_1" pos="350" freq="900" file="out.xml"/>
+   <inductionLoop id="1i_2" lane="1i_2" pos="350" freq="900" file="out.xml"/>
+   <inductionLoop id="2i_1" lane="2i_1" pos="350" freq="900" file="out.xml"/>
+   <inductionLoop id="2i_2" lane="2i_2" pos="350" freq="900" file="out.xml"/>
+   <inductionLoop id="3i_1" lane="3i_1" pos="350" freq="900" file="out.xml"/>
+   <inductionLoop id="3i_2" lane="3i_2" pos="350" freq="900" file="out.xml"/>
+   <inductionLoop id="4i_1" lane="4i_1" pos="350" freq="900" file="out.xml"/>
+   <inductionLoop id="4i_2" lane="4i_2" pos="350" freq="900" file="out.xml"/>
+
 </additional>

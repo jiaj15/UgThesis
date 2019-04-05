@@ -1,20 +1,20 @@
 <routes>
-        <vType id="SUMO_DEFAULT_TYPE" accel="0.8" decel="4.5" sigma="0" length="5" minGap="2" maxSpeed="70"/>
+    <vType id="SUMO_DEFAULT_TYPE" accel="0.8" decel="4.5" sigma="0" length="5" minGap="2" maxSpeed="70"/>
 
-        <route id="W2E" edges="51o 1i 2o 52i" />
-        <route id="E2W" edges="52o 2i 1o 51i" />
-        <route id="N2S" edges="54o 4i 3o 53i" />
-        <route id="S2N" edges="53o 3i 4o 54i" />
+    <route id="W2E" edges="51o 1i 2o 52i"/>
+    <route id="E2W" edges="52o 2i 1o 51i"/>
+    <route id="N2S" edges="54o 4i 3o 53i"/>
+    <route id="S2N" edges="53o 3i 4o 54i"/>
 
-        <route id="W2N" edges="51o 1i 4o 54i" />
-        <route id="N2E" edges="54o 4i 2o 52i" />
-        <route id="E2S" edges="52o 2i 3o 53i" />
-        <route id="S2W" edges="53o 3i 1o 51i" />
+    <route id="W2N" edges="51o 1i 4o 54i"/>
+    <route id="N2E" edges="54o 4i 2o 52i"/>
+    <route id="E2S" edges="52o 2i 3o 53i"/>
+    <route id="S2W" edges="53o 3i 1o 51i"/>
 
-        <route id="W2S" edges="51o 1i 3o 53i" />
-        <route id="S2E" edges="53o 3i 2o 52i" />
-        <route id="E2N" edges="52o 2i 4o 54i" />
-        <route id="N2W" edges="54o 4i 1o 51i" />
+    <route id="W2S" edges="51o 1i 3o 53i"/>
+    <route id="S2E" edges="53o 3i 2o 52i"/>
+    <route id="E2N" edges="52o 2i 4o 54i"/>
+    <route id="N2W" edges="54o 4i 1o 51i"/>
 
 
     <vehicle id="right_0" type="SUMO_DEFAULT_TYPE" route="W2E" depart="0"/>
