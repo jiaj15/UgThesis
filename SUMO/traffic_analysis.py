@@ -45,6 +45,7 @@ class lane_info:
         self.ID = ID
         vehicles_lane_waitingtime = traci.lane.getWaitingTime(self.ID)
         self.queuelength = traci.lane.getLastStepHaltingNumber(self.ID)
+        print self.queuelength
         self.traffic_volume = traci.inductionloop.getLastStepVehicleNumber(self.ID)
         # self.traffic_volume = traci.lane.getLastStepVehicleNumber(self.ID)
         # num=self.queuelength

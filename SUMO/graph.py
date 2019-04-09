@@ -26,82 +26,68 @@ nonconflict = [[], [1, 2, 4, 5], [1, 2, 6, 7], [3, 4, 6, 7], [1, 3, 4, 8], [1, 5
 # weight=[0,0, 0, 0, 0, 0, 0, 0, 0]
 
 
-# def minst(weight):
-#     n = 8
-#
-#     IS = []
-#     IS_w = []
-#     # independent set
-#
-#     for j in range(n):
-#         flag = [0, 0, 0, 0, 0, 0, 0, 0, 0]
-#         # flag[j]=1
-#         tmp = []
-#         tmp_w = 0
-#
-#         for ik in nonconflict[j]:
-#
-#             for k in range(len(tmp)):
-#                 if ik not in nonconflict[tmp[k]]:
-#                     flag[ik] = 2
-#                     break
-#             if flag[ik] == 0:
-#                 tmp.append(ik)
-#                 tmp_w = tmp_w + weight[ik]
-#         IS.append(tmp)
-#         IS_w.append(tmp_w)
-#     # maximal weight
-#     maxW = 0
-#     max = 0
-#     print IS
-#     print IS_w
-#     for i in range(len(IS_w)):
-#
-#         if IS_w[i] > maxW:
-#             maxW = IS_w[i]
-#             max = i
-#     #    print IS[max]
-#     return IS[max]
-# def geNumber():
-#     IK=[]
-#     for i in range(8):
-#         for j in nonconflict[i]:
-#             if i+1 !=j:
-#                 IK.append([i+1,j])
-#
-#     return IK
-#
+class Vertices:
+    ID = 0
+    Gtime = 0
+    curState = ''
+    weight = 0
+    T = 0
+
+    def __init__(self, id, cycle):
+        self.ID = id
+        self.T = cycle
+
+    def updateState(self, cur):
+        self.curState = cur
+        if cur == 'G':
+            self.Gtime = self.Gtime + self.T
+        else:
+            self.Gtime = 0
+
+    def updateWeight(self, weight, standard):
+        self.weight = weight[self.ID]
+        if self.curState == 'G':
+            if self.Gtime < 45:
+                if self.weight is not 0:
+                    if standard == 'v':
+                        self.weight = + (400 - self.Gtime)
+                    else:
+                        self.weight = + (400 - self.Gtime)
 
 
-# def minst_v2(weight):
-#
-#     n = 8
-#     M=np.zeros([9,9])
-#     for k in range(9):
-#         M[k][k]=weight[k]
-#
-#     for j in range(1,n+1):
-#         ik =set(range(1,9)).difference(set(conflict[j]))
-#         for i in range(1,j):
-#             for element in ik:
-#
-#
-#                 if element in range(i,j) and M[i][j-1]<M[i][element-1]+weight[element]+M[element+1][j-1]:
-#                     M[i][j]=M[i][element-1]+weight[element]+M[element+1][j-1]
-#                 else:
-#                     M[i][j] = M[i][j - 1]
-#     return M
-#
+class Graph():
+    graph = []
+
+    def __init__(self, cycle):
+        self.graph.append(0)
+        for i in range(1, 9):
+            self.graph.append(Vertices(i, cycle))
+
+    def updateGraphState(self, MWIS):
+        for i in range(1, 9):
+            if i in MWIS:
+                self.graph[i].updateState('G')
+            else:
+                self.graph[i].updateState('r')
+
+    def updateGraphWeight(self, weight, standard):
+        for i in range(1, 9):
+            self.graph[i].updateWeight(weight, standard)
+            weight[i] = self.graph[i].weight
+        return weight
+
+
+
+
 
 def MIS():
-    IS=[]
+    IS = []
     for i in range(1, 9):
         for j in range(1, i):
 
             if j in nonconflict[i]:
                 k = set(nonconflict[i]) & set(nonconflict[j])
                 IS.append(k)
-
 
     print IS
     return IS
@@ -129,10 +115,10 @@ def MWIS(weight):
     # print MAXIndex
     # print W
     print IS[MAXIndex]
-    return IS[MAXIndex]
+    return IS[MAXIndex], MAXIndex
 
-
-if __name__ == "__main__":
-    weight = [0, 16.0, 0, 12038.0, 2.0, 0, 3017.0, 0, 2437.0]
-    MIS()
-    MWIS(weight)
+#
+# if __name__ == "__main__":
+#     weight = [0, 16.0, 0, 12038.0, 2.0, 0, 3017.0, 0, 2437.0]
+#     MIS()
+#     MWIS(weight)

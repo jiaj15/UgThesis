@@ -5,11 +5,13 @@ import optparse
 import subprocess
 import random
 import run
-import results as rs
+import matplotlib.pyplot as plt
+import pandas
 
+phasesrecord = []
 random.seed(42)  # make tests reproducible
 # we need to import python modules from the $SUMO_HOME/tools directory
-results = []
+
 
 try:
     sys.path.append(os.path.join(os.path.dirname(
@@ -27,8 +29,18 @@ import traci
 PORT = 8873
 
 
-def run_bench():
+def record_queuelength():
     global results
+    result = 0
+    result = result + traci.edge.getLastStepHaltingNumber('1i')
+    result = result + traci.edge.getLastStepHaltingNumber('2i')
+    result = result + traci.edge.getLastStepHaltingNumber('3i')
+    result = result + traci.edge.getLastStepHaltingNumber('4i')
+
+    results.append(result)
+def run_bench():
+    global phasesrecord
+
     traci.init(PORT)
     step = 0
     # we start with phase 2 where EW has green
@@ -36,12 +48,16 @@ def run_bench():
 
     while traci.simulation.getMinExpectedNumber() > 0:
         traci.simulationStep()
-        print traci.trafficlights.getPhase("0")
+        phasesrecord.append(traci.trafficlights.getPhase("0"))
+        record_queuelength()
+
+
         # run.updateWeight('w')
 
         step += 1
     traci.close()
     sys.stdout.flush()
+    return step
 
 
 def get_options():
@@ -53,6 +69,7 @@ def get_options():
 
 
 if __name__ == "__main__":
+    results = []
 
     options = get_options()
     # this script has been called from the command line. It will start sumo as a
@@ -68,7 +85,21 @@ if __name__ == "__main__":
     # this is the normal way of using traci. sumo is started as a
     # subprocess and then the python script connects and runs
     sumoProcess = subprocess.Popen([sumoBinary, "-c", "va_data/cross.sumocfg", "--summary-output",
-                                    "tripinfo_va.xml", "--remote-port", str(PORT)], stdout=sys.stdout,
+                                    "OUTPUT/tripinfo_va.xml", "--remote-port", str(PORT)], stdout=sys.stdout,
                                    stderr=sys.stderr)
-    run_bench()
-    rs.SaveResults(results, 90, 'v')
+    step = run_bench()
+    x = range(step)
+    y = []
+    for phase in phasesrecord:
+        y.append(int(phase))
+    # y=phasesrecord
+
+    data_f = pandas.DataFrame(y, x)
+    filename_da = "OUTPUT/benchmark_phaseRecord.csv"
+    data_f.to_csv(filename_da, mode="w+")
+    plt.plot(x, y)
+    plt.show()
+
+    data_j = pandas.DataFrame({"queue length": results, "steps": x})
+    filename_ql = "data/output/31-r.csv"
+    data_j.to_csv(filename_ql, mode="w+")

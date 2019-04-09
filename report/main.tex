@@ -1,0 +1,171 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+
+\title{An Adaptive Traffic Signal Control System with Partial Information}
+\author{Jing Jia}
+\date{April 2019}
+
+\usepackage{natbib}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{geometry}
+\usepackage{subfigure}
+
+\usepackage{hyperref}
+
+\begin{document}
+
+\maketitle
+
+
+\section{Introduction}
+
+Traffic congestion has increased in the past years globally with the rapid growth of urbanization and automobile usage, which leads to tremendous wasting time and fuel consumption. Current methods to mitigate growing traffic demands include advocating ride sharing to reduce private car usage, improving transportation systems and infrastructures, forced traffic restriction, etc. Efficient and intelligent traffic signal control policy is one of the key points of reducing congestion and oversaturated situations. Conventional signal control strategy is usually pre-timed empirically based on previous knowledge and analysis, while traffic demands vary with stochastic conditions such as weather and traffic accidents. 
+
+Hereby, a simple feedback controller with conflict graph included to calculate the optimal phasing sequences is proposed in this thesis project. To approach the reality, the assumption of full knowledge of the speed and location information of approaching vehicles is not adopted. States used for feedback are estimated from information collected from connected vehicles under different penetration rates. A deep learning approach is expected to be adopted to simplify the estimation.
+
+
+\paragraph{Research objectives}
+\begin{enumerate}
+    \item Design an adaptive controller under the assumption of not full knowledge of approaching vehicles
+    \item Control the signal phases sequence and timing at an isolated k-leg intersection simultaneously
+
+\end{enumerate}
+\section{Overview}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=1.\textwidth]{images/flowchart.png}
+    \caption{Overview Flowchart}
+    \label{fig:flc}
+\end{figure}
+
+Figure \ref{fig:flc} shows an overview of the whole process.In every cycle, the system estimates traffic state like queue length and traffic volume from information of connected vehicles, and calculate the maximum-weight independent set of conflict graph used to generate signal phases sequence.
+
+\subsection{State estimation}
+
+A neural network is expected to estimate traffic state like queue length and traffic volume from information of connected vehicles. 
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.6\textwidth]{images/intersection.png}
+    \caption{Matrices transformation}
+    \label{fig:mt}
+\end{figure}
+Figure \ref{fig:mt} shows the method to convert the information of partial vehicles to the input of the neural network. For an intersection, we generate three matrices, one for velocity, one for position , and traffic signal state for every lanes.
+Every lane is separated into a number of cells. If there exists one vehicle in the cell, the corresponding element in the position matrix $P$ will be 1, otherwise, it will be 0. Elements in the velocity matrix $V$ are equal to the values of normalized speed of vehicles inside cells. $n$s represents the total number of lanes in an intersection.
+
+
+\begin{equation*}
+  P=\begin{matrix}\left[L_{pos_1}\right.&...&\left.L_{pos_n}\right]\\\end{matrix}  
+\end{equation*}
+
+\begin{equation*}
+    V=\begin{matrix}\left[L_{vel_1}\right.&...&\left.L_{vel_n}\right]\\\end{matrix}
+\end{equation*}
+
+\begin{equation*}
+    S=\begin{matrix}\left[L_{sig_1}\right.&...&\left.L_{sig_n}\right]\\\end{matrix}
+\end{equation*}
+
+The specific neural network structure has not been decided yet. Convolutional neural network (CNN) is supposed to be the most simple method and widely use in state estimation of reinforcement learning approaches. 
+
+\subsection{Conflict graph}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.4\textwidth]{images/conflictgraph.png}
+    \caption{Conflict graph}
+    \label{fig:cg}
+\end{figure}
+
+Figure \ref{fig:cg} shows a typical four-leg intersection with eight traffic movements numbered 1–8. We can build a conflict graph of an intersection as $G(V,E)$, where $V$ is a set of vertices, and $E$ is a set of arcs. $V$ is also a set of numbered movements, and $E$ represents the conflict relationship between those movements. For example, movement 1 and movement 2 cannot occur simultaneously, then there should be an edge connecting vertex 1 and vertex 2 in $E$.
+
+In graph theory, an independent set is a set of vertices in a graph, no two of which are adjacent. That is, it is a set S of vertices such that for every two vertices in S, there is no edge connecting the two. In conflict graph of an intersection, it is a phase which permits a set of non-conflicted movements.
+
+After we initialize and update the weight of vertices using some kinds of cost like queue length, the maximum-weight independent set will generate the current phase of the traffic signal. Traversal method with time complexity $O(2^n)$ is used to get the maximum-weight independent set. 
+
+However, there is a key problem in this part. That is, how to define the weight of vertices?
+
+\begin{enumerate}
+    \item Single traffic state values like waiting time, queue length and traffic volume
+    \item Hybrid traffic states values like weighted waiting time(e.g. the first vehicle weighs most), queue length plus traffic volume, and etc.
+    \item Traffic cost plus penalty for changing phases too frequently
+    
+\end{enumerate}
+
+That is what we have considered yet and different methods of calculating weight are going to be tested in the numerical experiments. 
+
+\section{Numerical experiments}
+
+There are some initial results of numerical experiments, where state estimation is not considered and maximum-weight independent set is the main thing to test.
+We use gap-based actuated traffic control as benchmark. Figure \ref{Fig.main} shows the results under a traffic flow generated at a fixed rate in 3200s when using pure traffic volume or queue length as weight. Figure \ref{Fig.sub.1} to Figure \ref{Fig.sub.4} suppose that it will not make too much difference whether choosing traffic volume or queue length. Figure \ref{Fig.sub.5} shows that when changing phases too frequently, performances get worse. Figure \ref{Fig.sub.6} compares the experimental group of best performance (circle = 25s, queue length) with benchmark group.
+
+\begin{figure}[htbp]
+
+\centering  %图片全局居中
+
+\subfigure[Circle time=5s]{
+\label{Fig.sub.1}
+\includegraphics[width=0.45\textwidth]{images/5.png}
+}
+\subfigure[Circle time=10s]{
+\label{Fig.sub.2}
+\includegraphics[width=0.45\textwidth]{images/10.png}
+}
+
+
+\subfigure[Circle time=15s]{
+\label{Fig.sub.3}
+\includegraphics[width=0.45\textwidth]{images/15.png}
+}
+\subfigure[Circle time=25s]{
+\label{Fig.sub.4}
+\includegraphics[width=0.45\textwidth]{images/25.png}
+}
+
+\subfigure[Weight=queue length]{
+\label{Fig.sub.5}
+\includegraphics[width=0.45\textwidth]{images/w.png}     }
+\subfigure[Weight = queue length, circle time =25s]{
+\label{Fig.sub.6}
+\includegraphics[width=0.45\textwidth]{images/25b.png}
+}
+\caption{Queue length with fixed traffic volume, $V_{SN}= 360 veh/h, V_{WE} = 400 veh/h, V_{left turn}= 120 veh/h$}
+\label{Fig.main}
+
+\end{figure}
+
+
+Then I add a linear function of previous and continuous green time to reduce the changing frequency of phases and increase the traffic volume
+.
+\begin{gather}
+    Weight = queue length +R(Constant- GreenTime)\\
+    R(x)= \begin{cases}
+x,\quad x\geq 0 \\
+0,\quad x<0
+\end{cases} 
+\end{gather}
+
+\begin{figure}[htbp]
+
+    \centering
+    \subfigure[Weight with penalty compared to benchmark]{
+    \includegraphics[width=0.45\textwidth]{images/p.png}
+    \label{fig:sub.p}
+    }
+    \subfigure[Weight with penalty but different circle time]{
+    \includegraphics[width=0.45\textwidth]{images/pnb.png}
+    \label{fig:sub.pnb}}
+    \caption{Queue length with fixed traffic volume, $V_{SN}=360 veh/h, V_{WE} = 1200 veh/h, V_{left turn}= 120 veh/h$}
+    \label{fig:new_data}
+\end{figure}
+
+\section{Appendix}
+
+
+\href{https://github.com/jiaj15/UgThesis/tree/dev}{Github repository links}
+
+% \bibliographystyle{plain}
+% \bibliography{references}
+\end{document}

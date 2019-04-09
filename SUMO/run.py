@@ -9,13 +9,13 @@ import PARAMETER as p
 import graph
 import results as rs
 import pandas as pd
+import matplotlib.pyplot as plt
 
 random.seed(42)  # make tests reproducible
 # we need to import python modules from the $SUMO_HOME/tools directory
 
 
 results = []
-step = 0
 
 try:
     sys.path.append(os.path.join(os.path.dirname(
@@ -33,87 +33,11 @@ import traci
 PORT = 8873
 
 
-#
-# def updateweightVolume():
-#     global results
-#     weight = []
-#     weight.append(0)
-#     x = locals()
-#     results_step = []
-#
-#     for j in p.GRAPH_DIC:
-#         jroute = p.GRAPH_DIC[j]
-#         w = 0
-#         for k in p.lanes_dict[jroute]:
-#             klane = ta.lane_info(k)
-#             x[k] = klane
-#             results_step.append(klane)
-#             w = w + klane.traffic_volume
-#
-#         weight.append(w)
-#     results.append(results_step)
-#
-#     orlight = 'grrrgrrrgrrrgrrr'
-#     orlight = list(orlight)
-#
-#     trans = {1: [2, 3], 2: [1], 3: [14, 15], 4: [13], 5: [10, 11], 6: [9], 7: [6, 7], 8: [5]}
-#
-#     minst = graph.minst(weight)
-#
-#     print minst
-#
-#     for i in minst:
-#         for j in trans[i]:
-#             orlight[j] = 'G'
-#     light = orlight[0]
-#     for k in range(1, len(orlight)):
-#         light = light + orlight[k]
-#
-#     print light
-#     return light
-#
-#
-# def updateweightWaitingtime():
-#     global results
-#     weight = []
-#     weight.append(0)
-#     x = locals()
-#     results_step = []
-#
-#     for j in p.GRAPH_DIC:
-#         jroute = p.GRAPH_DIC[j]
-#         w = 0
-#         for k in p.lanes_dict[jroute]:
-#             klane = ta.lane_info(k)
-#             x[k] = klane
-#             results_step.append(klane)
-#             w = w + klane.AverageWaitingTime
-#
-#         weight.append(w)
-#     results.append(results_step)
-#
-#     orlight = 'grrrgrrrgrrrgrrr'
-#     orlight = list(orlight)
-#
-#     trans = {1: [2, 3], 2: [1], 3: [14, 15], 4: [13], 5: [10, 11], 6: [9], 7: [6, 7], 8: [5]}
-#
-#     minst = graph.minst(weight)
-#
-#     print minst
-#
-#     for i in minst:
-#         for j in trans[i]:
-#             orlight[j] = 'G'
-#     light = orlight[0]
-#     for k in range(1, len(orlight)):
-#         light = light + orlight[k]
-#
-#     print light
-#     return light
+
 
 
 def updateWeight(standard):
-    global results
+    global results, PHASERECORD, xsteps, step
     weight = []
     weight.append(0)
     x = locals()
@@ -129,7 +53,7 @@ def updateWeight(standard):
             results_step.append(klane)  # saving results
 
             if standard == 'w':
-                w = w + klane.AverageWaitingTime
+                w = w + klane.queuelength
 
             if standard == 'v':
                 w = w + klane.traffic_volume
@@ -146,7 +70,66 @@ def updateWeight(standard):
     trans = {1: [2, 3], 2: [1], 3: [14, 15], 4: [13], 5: [10, 11], 6: [9], 7: [6, 7], 8: [5]}
     print weight
 
-    minst = graph.MWIS(weight)
+    minst, PHASEINDEX = graph.MWIS(weight)
+    PHASERECORD.append(PHASEINDEX)
+    xsteps.append(step)
+
+    print minst
+
+    for i in minst:
+        for j in trans[i]:
+            orlight[j] = 'g'
+    light = orlight[0]
+    for k in range(1, len(orlight)):
+        light = light + orlight[k]
+
+    print light
+    return light
+
+
+def updatePlusPenalty(standard):
+    global g
+
+    global results, PHASERECORD, xsteps
+    weight = []
+    weight.append(0)
+    x = locals()
+    results_step = []
+
+    for j in p.GRAPH_DIC:
+        jroute = p.GRAPH_DIC[j]
+        w = 0
+        for k in p.lanes_dict[jroute]:
+            klane = ta.lane_info(k)
+            x[k] = klane
+
+            results_step.append(klane)  # saving results
+
+            if standard == 'v':
+                w = w + klane.AverageWaitingTime
+
+            if standard == 'w':
+                w = w + klane.queuelength
+
+            if standard == 'vw':
+                w = w + klane.AverageWaitingTime + klane.traffic_volume
+
+        weight.append(w)
+    results.append(results_step)
+
+    orlight = 'grrrgrrrgrrrgrrr'
+    orlight = list(orlight)
+
+    trans = {1: [2, 3], 2: [1], 3: [14, 15], 4: [13], 5: [10, 11], 6: [9], 7: [6, 7], 8: [5]}
+    print weight
+    weight2 = g.updateGraphWeight(weight, standard)
+
+    minst, PHASEINDEX = graph.MWIS(weight2)
+    PHASERECORD.append(PHASEINDEX)
+    xsteps.append(step)
+    print step
+
+    g.updateGraphState(minst)
 
     print minst
 
@@ -168,11 +151,14 @@ def transTraci(light, prelight):
     translight = ''
     for i in range(len(light)):
         if light[i] == prelight[i]:
-            translight = translight + light[i]
+            translight = translight + prelight[i]
         else:
             flag = True
             if prelight[i] == 'g':
-                translight = translight + 'y'
+                if light[i] == 'r':
+                    translight = translight + 'y'
+                else:
+                    translight = translight + prelight[i]
 
             else:
                 translight = translight + prelight[i]
@@ -200,7 +186,8 @@ def run(cycle, standard):
         else:
 
             if step % cycle == 0:
-                nextlight = updateWeight(standard)
+                # nextlight = updateWeight(standard)
+                nextlight = updatePlusPenalty(standard)
                 curlight, flag = transTraci(nextlight, curlight)  # yellow state
                 traci.trafficlights.setRedYellowGreenState("0", curlight)
 
@@ -234,6 +221,7 @@ def run_noyellow(cycle, standard):
 
 
 
+
 def get_options():
     optParser = optparse.OptionParser()
     optParser.add_option("--nogui", action="store_true",
@@ -250,22 +238,43 @@ if __name__ == "__main__":
     # sumoProcess = subprocess.Popen([sumoBinary, "-c", "data/cross.sumocfg", "--tripinfo-output",
     #                                 "tripinfo.xml", "--remote-port", str(PORT)], stdout=sys.stdout, stderr=sys.stderr)
 
-    cycle = [25]
-    stand = ['v']
+    cycle = [5, 10, 15, 20, 25]
+    stand = ['w']
+    # graph=[]
     for i in cycle:
         for j in stand:
+            PHASERECORD = []
+            xsteps = []
+            step = 0
+            results = []
+
+            g = graph.Graph(i)
+            g.updateGraphState([])
+            # for index in range(1,9):
+            #     graph.append(graph.Vertices(index,i))
+
             options = get_options()
-            name = 'v' + str(i) + '.xml'
+            name = str(j) + str(i) + '.xml'
 
             if options.nogui:
                 sumoBinary = checkBinary('sumo')
             else:
                 sumoBinary = checkBinary('sumo-gui')
             sumoProcess = subprocess.Popen([sumoBinary, "-c", "data/cross.sumocfg", "--summary-output",
-                                            name, "--remote-port", str(PORT)], stdout=sys.stdout, stderr=sys.stderr)
+                                            "OUTPUT_2/" + name, "--remote-port", str(PORT)], stdout=sys.stdout,
+                                           stderr=sys.stderr)
 
             run(i, j)
+
             # sumoProcess.wait()
             df = rs.SaveResults(results, i, j)
 
             results = []
+
+            y = PHASERECORD
+            x = xsteps
+            data_f = pd.DataFrame(x, y)
+            filename_da = "OUTPUT_2/" + name + "_phaseRecord.csv"
+            data_f.to_csv(filename_da, mode="w+")
+            plt.plot(x, y)
+            plt.show()
