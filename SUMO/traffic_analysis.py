@@ -50,10 +50,11 @@ class lane_info:
         # self.traffic_volume = traci.lane.getLastStepVehicleNumber(self.ID)
         # num=self.queuelength
         # self.vehicle_num=traci.lane.getLastStepVehicleNumber(self.ID)
-        num=self.traffic_volume
+        num = traci.lane.getLastStepHaltingNumber(self.ID)
+        vehicles = traci.lane.getLastStepVehicleIDs(self.ID)
 
         if num is not 0:
-            self.AverageWaitingTime=vehicles_lane_waitingtime/num
+            self.AverageWaitingTime = (vehicles_lane_waitingtime + 2 * traci.vehicle.getWaitingTime(vehicles[0])) / num
         # sum=0
         #
         # for index in range(len(self.vehicles_lane_waitingtime)):

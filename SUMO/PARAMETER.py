@@ -1,15 +1,16 @@
 # probability of approaching vehicles
 
-pWE = 1. / 9
-pEW = 1. / 9
-pNS = 1. / 10
-pSN = 1. / 10
+pWE = 1. / 6
+pEW = 1. / 6
+pNS = 1. / 6
+pSN = 1. / 6
 
-pWN = 1. / 30
+pWN = 1. / 10  # 30
 pNE = 1. / 30
-pES = 1. / 30
+pES = 1. / 10
 pSW = 1. / 30
 
+precord = {"1": [1 / 9, 1 / 9, 1 / 10, 1 / 10, 1 / 30, 1 / 30, 1 / 30, 1 / 30]}
 # pWS = 1. / 20
 # pSE = 1. / 10
 # pEN = 1. / 20
@@ -17,7 +18,7 @@ pSW = 1. / 30
 
 YELLOW_TIME = 3
 PENETRATION_RATE = 9. / 10
-WIDTH = 70
+WIDTH = 50
 
 # <vType id="SUMO_DEFAULT_TYPE"
 # accel="0.8" decel="4.5" sigma="0" length="5" minGap="2" maxSpeed="70"/>
@@ -42,6 +43,6 @@ SPEEDLIMIT = 14  #
 
 # CNN
 
-EPOCH = 1
-BATCH_SIZE = 50
-LR = 0.3
+EPOCH = 4
+BATCH_SIZE = 30
+LR = 0.1

@@ -238,7 +238,7 @@ if __name__ == "__main__":
     # sumoProcess = subprocess.Popen([sumoBinary, "-c", "data/cross.sumocfg", "--tripinfo-output",
     #                                 "tripinfo.xml", "--remote-port", str(PORT)], stdout=sys.stdout, stderr=sys.stderr)
 
-    cycle = [5, 10, 15, 20, 25]
+    cycle = [5]
     stand = ['w']
     # graph=[]
     for i in cycle:
@@ -260,8 +260,8 @@ if __name__ == "__main__":
                 sumoBinary = checkBinary('sumo')
             else:
                 sumoBinary = checkBinary('sumo-gui')
-            sumoProcess = subprocess.Popen([sumoBinary, "-c", "data/cross.sumocfg", "--summary-output",
-                                            "OUTPUT_2/" + name, "--remote-port", str(PORT)], stdout=sys.stdout,
+            sumoProcess = subprocess.Popen([sumoBinary, "-c", "data/cross.sumocfg", "--tripinfo-output",
+                                            "OUTPUT/" + name, "--remote-port", str(PORT)], stdout=sys.stdout,
                                            stderr=sys.stderr)
 
             run(i, j)

@@ -54,11 +54,20 @@
 
 2. all red and yellow time 
 
+    没啥影响，事实证明是因为切换过频繁或者建模错了
+
 3. T很小的时候测试，加入penalty似乎感觉上会好一点
+
+    加入简单的线性惩罚函数后，T的取值相对影响好了点，但是仍然是20-25的效果比较好
 
 4. report: introduction + process + graph + numerical experi
 
 5. 改动流量,然后测试不同的WEIGHT METHOD
+
+#### 0410
+
+建了个简单的CNN
+
     
 ### 数据记录
 
@@ -95,7 +104,28 @@
 | meanwait |4.47 |19.39  |3.12   |3.12           |
 | meanwait |2.97 |2.97   |2.97   |2.97           |
   
-   
+ 
+ 
+ 
+ ### state estimation
+ 网络结构： 两层卷积+两层全链接
+ 
+ 网络输入： 考虑PENETRATION RATE的速度和位置矩阵
+ 
+ 网络输出： 12个方向的QUEUE LENGTH(12*1)和WAITING TIME(12*1)
+ 
+ 训练集： 0.7-0.9（间隔0.01）， 流量固定， 
+ 
+    采集的方法：
+    for penetration rate in 0.7-0.9
+        generate new route file
+        sumo
+        collect 50 screenshots randomly
+    output: 20*50 training sets
+ 
+ 
+ 
+ 
 ### sumo learning notes
 ```
 
@@ -110,3 +140,7 @@ sumo -c myConfig.sumocfg --fcd-output.signals sumoTrace.xml
 traceExporter.py --penetration 0.1 --fcd-input sumotrace.xml --ns2-mobilityoutput ns2mobility.tcl
 
 ```
+
+/usr/share/sumo/tools/xml
+
+`$ python xml2csv.py /home/jing/PycharmProjects/sumo_demo/UgThesis/SUMO/OUTPUT/v5.xml`

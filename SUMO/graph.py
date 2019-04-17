@@ -32,6 +32,7 @@ class Vertices:
     curState = ''
     weight = 0
     T = 0
+    pre = []
 
     def __init__(self, id, cycle):
         self.ID = id
@@ -39,20 +40,32 @@ class Vertices:
 
     def updateState(self, cur):
         self.curState = cur
-        if cur == 'G':
+        if cur == 'g':
             self.Gtime = self.Gtime + self.T
+            self.pre.append(1)
         else:
             self.Gtime = 0
+            self.pre.append(0)
 
-    def updateWeight(self, weight, standard):
+    def updateWeight_v1(self, weight, standard):
         self.weight = weight[self.ID]
-        if self.curState == 'G':
-            if self.Gtime < 45:
+        if self.curState == 'g':
+            if self.Gtime < 50:
                 if self.weight is not 0:
-                    if standard == 'v':
-                        self.weight = + (400 - self.Gtime)
-                    else:
-                        self.weight = + (400 - self.Gtime)
+                    self.weight = self.weight + (50 - self.Gtime)
+
+    def updateWeight_v2(self, weight, standard):
+        self.weight = weight[self.ID]
+        weight = 0
+        for index in range(len(self.pre)):
+            weight = weight + (self.pre[index] - self.pre[index - 1]) ^ 2
+        if self.weight is not 0:
+            self.weight = self.weight
+
+            # if standard == 'v':
+            #     self.weight = + (400 - self.Gtime)
+            # else:
+            #     self.weight = + (400 - self.Gtime)
 
 
 class Graph():
@@ -66,13 +79,13 @@ class Graph():
     def updateGraphState(self, MWIS):
         for i in range(1, 9):
             if i in MWIS:
-                self.graph[i].updateState('G')
+                self.graph[i].updateState('g')
             else:
                 self.graph[i].updateState('r')
 
     def updateGraphWeight(self, weight, standard):
         for i in range(1, 9):
-            self.graph[i].updateWeight(weight, standard)
+            self.graph[i].updateWeight_v1(weight, standard)
             weight[i] = self.graph[i].weight
         return weight
 

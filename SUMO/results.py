@@ -146,5 +146,4 @@ def csvPlot():
             else:
                 df[labela] = waiting
 
-
-PlotResults()
+# PlotResults()
