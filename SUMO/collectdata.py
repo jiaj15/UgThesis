@@ -11,6 +11,8 @@ import csv
 import time
 import numpy as np
 import generate_route as groute
+import model_v2 as cnnModel
+import torch
 
 # random.seed(42)  # make tests reproducible
 # we need to import python modules from the $SUMO_HOME/tools directory
@@ -149,12 +151,12 @@ def output_state_v1(step, PENETRATION_RATE):
     arrivalrate = '_6666we10'
 
     stime = time.strftime("%m-%d-%H-%M-%S", time.localtime())
-    filename_1 = 'data/output/vel_' + str(int(PENETRATION_RATE * 100)) + arrivalrate + '_' + stime + '_' + str(
+    filename_1 = 'data/output1/vel_' + str(int(PENETRATION_RATE * 100)) + arrivalrate + '_' + stime + '_' + str(
         step) + '.csv'
     vall_f = pd.DataFrame(velMatrix)
     vall_f.to_csv(filename_1, mode='w')
 
-    filename_2 = 'data/output/pos_' + str(int(PENETRATION_RATE * 100)) + arrivalrate + '_' + stime + '_' + str(
+    filename_2 = 'data/output1/pos_' + str(int(PENETRATION_RATE * 100)) + arrivalrate + '_' + stime + '_' + str(
         step) + '.csv'
     vall_f = pd.DataFrame(posMatrix)
     vall_f.to_csv(filename_2, mode='w')
@@ -165,26 +167,26 @@ def output_state_v1(step, PENETRATION_RATE):
     # print(svm.shape,spm.shape)
     # svall=np.stack((svm,spm))
 
-    filename_3 = 'data/output/vel' + "S" + str(int(PENETRATION_RATE * 100)) + arrivalrate + '_' + stime + '_' + str(
+    filename_3 = 'data/output1/vel' + "S" + str(int(PENETRATION_RATE * 100)) + arrivalrate + '_' + stime + '_' + str(
         step) + '.csv'
     svall_f = pd.DataFrame(ori_velM)
     svall_f.to_csv(filename_3, mode='w')
 
-    filename_4 = 'data/output/pos' + "S" + str(int(PENETRATION_RATE * 100)) + arrivalrate + '_' + stime + '_' + str(
+    filename_4 = 'data/output1/pos' + "S" + str(int(PENETRATION_RATE * 100)) + arrivalrate + '_' + stime + '_' + str(
         step) + '.csv'
     svall_f = pd.DataFrame(ori_posM)
     svall_f.to_csv(filename_4, mode='w')
 
-    filename_5 = 'data/output/signal' + str(int(PENETRATION_RATE * 100)) + arrivalrate + '_' + stime + '_' + str(
+    filename_5 = 'data/output1/signal' + str(int(PENETRATION_RATE * 100)) + arrivalrate + '_' + stime + '_' + str(
         step) + '.csv'
     svall_f = pd.DataFrame(signalMatrix)
     svall_f.to_csv(filename_5, mode='w')
 
-    filename_6 = 'data/output/sumo_trainingset.csv'
+    filename_6 = 'data/output1/sumo_trainingset.csv'
 
     with open(filename_6, "a+") as csvfile:
         writer = csv.writer(csvfile)
-        writer.writerow([filename_1, filename_2, filename_2, filename_4, filename_5, PENETRATION_RATE])
+        writer.writerow([filename_1, filename_2, filename_3, filename_4, filename_5, PENETRATION_RATE])
 
 
 # The program looks like this
@@ -235,8 +237,8 @@ def output_state_v2(step, PENETRATION_RATE):
             ori_posM[i].append(0)
             velMatrix[i].append(0)
             ori_velM[i].append(0)
-            timeMatrix.append(0)
-            ori_time.append(0)
+            timeMatrix[i].append(0)
+            ori_time[i].append(0)
             # signalMatrix[i].append(0)
 
 
@@ -264,23 +266,23 @@ def output_state_v2(step, PENETRATION_RATE):
         if (ind < width):
             ori_posM[traci.vehicle.getLaneIndex(v)][width - 1 - ind] = 1
             ori_velM[traci.vehicle.getLaneIndex(v)][width - 1 - ind] = traci.vehicle.getSpeed(v) / speedLimit
-            ori_time[traci.vehicle.getLaneIndex(v)][width - 1 - ind] = traci.vehicle.getWaitingTime(v)
+            ori_time[traci.vehicle.getLaneIndex(v)][width - 1 - ind] = traci.vehicle.getWaitingTime(v) / 50
 
             if (random.uniform(0, 1) < penetration_rate):
                 posMatrix[traci.vehicle.getLaneIndex(v)][width - 1 - ind] = 1
                 velMatrix[traci.vehicle.getLaneIndex(v)][width - 1 - ind] = traci.vehicle.getSpeed(v) / speedLimit
-                timeMatrix[traci.vehicle.getLaneIndex(v)][width - 1 - ind] = traci.vehicle.getWaitingTime(v)
+                timeMatrix[traci.vehicle.getLaneIndex(v)][width - 1 - ind] = traci.vehicle.getWaitingTime(v) / 50
     for v in vehicles_road2:
         ind = int(
             abs((-junctionPosition + traci.vehicle.getPosition(v)[0] - offset)) / cellLength)
         if (ind < width):
             ori_posM[traci.vehicle.getLaneIndex(v) + 3][width - 1 - ind] = 1
             ori_velM[traci.vehicle.getLaneIndex(v) + 3][width - 1 - ind] = traci.vehicle.getSpeed(v) / speedLimit
-            ori_time[traci.vehicle.getLaneIndex(v) + 3][width - 1 - ind] = traci.vehicle.getWaitingTime(v)
+            ori_time[traci.vehicle.getLaneIndex(v) + 3][width - 1 - ind] = traci.vehicle.getWaitingTime(v) / 50
             if (random.uniform(0, 1) < penetration_rate):
                 posMatrix[traci.vehicle.getLaneIndex(v) + 3][width - 1 - ind] = 1
                 velMatrix[traci.vehicle.getLaneIndex(v) + 3][width - 1 - ind] = traci.vehicle.getSpeed(v) / speedLimit
-                timeMatrix[traci.vehicle.getLaneIndex(v) + 3][width - 1 - ind] = traci.vehicle.getWaitingTime(v)
+                timeMatrix[traci.vehicle.getLaneIndex(v) + 3][width - 1 - ind] = traci.vehicle.getWaitingTime(v) / 50
 
     junctionPosition = traci.junction.getPosition('0')[1]
 
@@ -290,24 +292,24 @@ def output_state_v2(step, PENETRATION_RATE):
         if (ind < width):
             ori_posM[traci.vehicle.getLaneIndex(v) + 6][width - 1 - ind] = 1
             ori_velM[traci.vehicle.getLaneIndex(v) + 6][width - 1 - ind] = traci.vehicle.getSpeed(v) / speedLimit
-            ori_time[traci.vehicle.getLaneIndex(v) + 6][width - 1 - ind] = traci.vehicle.getWaitingTime(v)
+            ori_time[traci.vehicle.getLaneIndex(v) + 6][width - 1 - ind] = traci.vehicle.getWaitingTime(v) / 50
             if (random.uniform(0, 1) < penetration_rate):
                 posMatrix[traci.vehicle.getLaneIndex(v) + 6][width - 1 - ind] = 1
                 velMatrix[traci.vehicle.getLaneIndex(v) + 6][width - 1 - ind] = traci.vehicle.getSpeed(v) / speedLimit
-                timeMatrix[traci.vehicle.getLaneIndex(v) + 6][width - 1 - ind] = traci.vehicle.getWaitingTime(v)
+                timeMatrix[traci.vehicle.getLaneIndex(v) + 6][width - 1 - ind] = traci.vehicle.getWaitingTime(v) / 50
     for v in vehicles_road4:
         ind = int(
             abs((-junctionPosition + traci.vehicle.getPosition(v)[1] - offset)) / cellLength)
         if (ind < width):
             ori_posM[traci.vehicle.getLaneIndex(v) + 9][width - 1 - ind] = 1
             ori_velM[traci.vehicle.getLaneIndex(v) + 9][width - 1 - ind] = traci.vehicle.getSpeed(v) / speedLimit
-            ori_time[traci.vehicle.getLaneIndex(v) + 9][width - 1 - ind] = traci.vehicle.getWaitingTime(v)
+            ori_time[traci.vehicle.getLaneIndex(v) + 9][width - 1 - ind] = traci.vehicle.getWaitingTime(v) / 50
             if (random.uniform(0, 1) < penetration_rate):
                 posMatrix[traci.vehicle.getLaneIndex(v) + 9][width - 1 - ind] = 1
                 velMatrix[traci.vehicle.getLaneIndex(v) + 9][width - 1 - ind] = traci.vehicle.getSpeed(v) / speedLimit
-                timeMatrix[traci.vehicle.getLaneIndex(v) + 9][width - 1 - ind] = traci.vehicle.getWaitingTime(v)
+                timeMatrix[traci.vehicle.getLaneIndex(v) + 9][width - 1 - ind] = traci.vehicle.getWaitingTime(v) / 50
 
-    # dirname='data/output/'+str(currenttime)
+    # dirname='data/output2/'+str(currenttime)
     # os.makedirs(dirname)
 
     # filename=dirname+'/pos.csv'
@@ -325,68 +327,188 @@ def output_state_v2(step, PENETRATION_RATE):
     # pm=np.asarray(posMatrix)
     # print(vm.shape,pm.shape)
     # vall=np.stack((vm,pm))
+
+    # save data
+
     arrivalrate = '_6666we10'
 
     stime = time.strftime("%m-%d-%H-%M-%S", time.localtime())
-    filename_1 = 'data/output/vel_' + str(int(PENETRATION_RATE * 100)) + arrivalrate + '_' + stime + '_' + str(
+    filename_1 = 'data/output1/vel_' + str(int(PENETRATION_RATE * 100)) + arrivalrate + '_' + stime + '_' + str(
         step) + '.csv'
     vall_f = pd.DataFrame(velMatrix)
     vall_f.to_csv(filename_1, mode='w')
 
-    filename_2 = 'data/output/pos_' + str(int(PENETRATION_RATE * 100)) + arrivalrate + '_' + stime + '_' + str(
+    filename_2 = 'data/output1/pos_' + str(int(PENETRATION_RATE * 100)) + arrivalrate + '_' + stime + '_' + str(
         step) + '.csv'
     vall_f = pd.DataFrame(posMatrix)
     vall_f.to_csv(filename_2, mode='w')
 
-    filename_3 = 'data/output/tim_' + str(int(PENETRATION_RATE * 100)) + arrivalrate + '_' + stime + '_' + str(
+    filename_3 = 'data/output1/tim_' + str(int(PENETRATION_RATE * 100)) + arrivalrate + '_' + stime + '_' + str(
         step) + '.csv'
     vall_f = pd.DataFrame(timeMatrix)
     vall_f.to_csv(filename_3, mode='w')
 
-    #
-    # svm=np.asarray(ori_velM)
-    # spm=np.asarray(ori_posM)
-    # print(svm.shape,spm.shape)
-    # svall=np.stack((svm,spm))
-
-    filename_3 = 'data/output/vel' + "S" + str(int(PENETRATION_RATE * 100)) + arrivalrate + '_' + stime + '_' + str(
+    filename_4 = 'data/output1/vel' + "S" + str(int(PENETRATION_RATE * 100)) + arrivalrate + '_' + stime + '_' + str(
         step) + '.csv'
     svall_f = pd.DataFrame(ori_velM)
-    svall_f.to_csv(filename_3, mode='w')
-
-    filename_4 = 'data/output/pos' + "S" + str(int(PENETRATION_RATE * 100)) + arrivalrate + '_' + stime + '_' + str(
-        step) + '.csv'
-    svall_f = pd.DataFrame(ori_posM)
     svall_f.to_csv(filename_4, mode='w')
 
-    filename_5 = 'data/output/signal' + str(int(PENETRATION_RATE * 100)) + arrivalrate + '_' + stime + '_' + str(
+    filename_5 = 'data/output1/pos' + "S" + str(int(PENETRATION_RATE * 100)) + arrivalrate + '_' + stime + '_' + str(
         step) + '.csv'
-    svall_f = pd.DataFrame(signalMatrix)
+    svall_f = pd.DataFrame(ori_posM)
     svall_f.to_csv(filename_5, mode='w')
 
-    filename_8 = 'data/output/sumo_trainingset.csv'
+    filename_6 = 'data/output1/tim' + "S" + str(int(PENETRATION_RATE * 100)) + arrivalrate + '_' + stime + '_' + str(
+        step) + '.csv'
+    svall_f = pd.DataFrame(ori_time)
+    svall_f.to_csv(filename_6, mode='w')
+
+    filename_7 = 'data/output1/signal' + str(int(PENETRATION_RATE * 100)) + arrivalrate + '_' + stime + '_' + str(
+        step) + '.csv'
+    svall_f = pd.DataFrame(signalMatrix)
+    svall_f.to_csv(filename_7, mode='w')
+
+    filename_8 = 'data/output1/sumo_trainingset.csv'
 
     with open(filename_8, "a+") as csvfile:
         writer = csv.writer(csvfile)
-        writer.writerow([filename_1, filename_2, filename_2, filename_4, filename_5, PENETRATION_RATE])
+        writer.writerow(
+            [filename_1, filename_2, filename_3, filename_4, filename_5, filename_6, filename_7, PENETRATION_RATE])
 
-    # vehicles_info_p= pd.DataFrame({})
 
-    # filename = 'data/output/pos_pr.csv'
-    # posm_f = pd.DataFrame({step: posMatrix})
-    # posm_f.to_csv(filename, mode="a+")
-    #
-    # filename = 'data/output/pos_or.csv'
-    # posm_f = pd.DataFrame({step: ori_posM})
-    # posm_f.to_csv(filename, mode="a+")
-    #
-    # filename = 'data/output/vel_pr.csv'
-    # posm_f = pd.DataFrame({step: velMatrix})
-    # posm_f.to_csv(filename, mode="a+")
-    #
-    # filename = 'data/output/pos_or.csv'
-    # posm_f = pd.DataFrame({step: ori_velM})
-    # posm_f.to_csv(filename, mode="a+")
+def output_weight_v3(step, PENETRATION_RATE):
+    posMatrix = []
+    velMatrix = []
+    signalMatrix = []
+    timeMatrix = []
+    # vehicles=[]
+    ori_posM = []
+    ori_velM = []
+    ori_time = []
+
+    cellLength = p.CELL_LENGTH
+    offset = p.OFFSET
+    speedLimit = p.SPEEDLIMIT
+    penetration_rate = PENETRATION_RATE
+    width = p.WIDTH
+
+    currenttime = step  # traci.SimulationDomain.getCurrentTime()
+
+    vehicles_road1 = traci.edge.getLastStepVehicleIDs('4i')
+    vehicles_road2 = traci.edge.getLastStepVehicleIDs('2i')
+    vehicles_road3 = traci.edge.getLastStepVehicleIDs('3i')
+    vehicles_road4 = traci.edge.getLastStepVehicleIDs('1i')
+
+    # for index in range(4):
+    #     edge_index=str(index+1)+'i'
+    #     vehicles.append(traci.edge.getLastStepVehicleIDs(edge_index))
+    for i in range(12):
+        posMatrix.append([])
+        velMatrix.append([])
+        timeMatrix.append([])
+        ori_posM.append([])
+        ori_velM.append([])
+        ori_time.append([])
+        signalMatrix.append(0)
+        for j in range(width):
+            posMatrix[i].append(0)
+            ori_posM[i].append(0)
+            velMatrix[i].append(0)
+            ori_velM[i].append(0)
+            timeMatrix[i].append(0)
+            ori_time[i].append(0)
+            # signalMatrix[i].append(0)
+
+    junctionPosition = traci.junction.getPosition('0')[0]
+    signals = traci.trafficlights.getRedYellowGreenState("0")
+    si = 0
+
+    for s in signals:
+        if si % 4 != 3:
+            index = 3 * int(si / 4) + int(si % 4)
+            if s is 'G':
+                signalMatrix[index] = 1
+            if s is 'g':
+                signalMatrix[index] = 1
+        si = si + 1
+
+    for v in vehicles_road1:
+        ind = int(
+            abs((junctionPosition - traci.vehicle.getPosition(v)[0] - offset)) / cellLength)
+        if (ind < width):
+            ori_posM[traci.vehicle.getLaneIndex(v)][width - 1 - ind] = 1
+            ori_velM[traci.vehicle.getLaneIndex(v)][width - 1 - ind] = traci.vehicle.getSpeed(v) / speedLimit
+            ori_time[traci.vehicle.getLaneIndex(v)][width - 1 - ind] = traci.vehicle.getWaitingTime(v) / 50
+
+            if (random.uniform(0, 1) < penetration_rate):
+                posMatrix[traci.vehicle.getLaneIndex(v)][width - 1 - ind] = 1
+                velMatrix[traci.vehicle.getLaneIndex(v)][width - 1 - ind] = traci.vehicle.getSpeed(v) / speedLimit
+                timeMatrix[traci.vehicle.getLaneIndex(v)][width - 1 - ind] = traci.vehicle.getWaitingTime(v) / 50
+    for v in vehicles_road2:
+        ind = int(
+            abs((-junctionPosition + traci.vehicle.getPosition(v)[0] - offset)) / cellLength)
+        if (ind < width):
+            ori_posM[traci.vehicle.getLaneIndex(v) + 3][width - 1 - ind] = 1
+            ori_velM[traci.vehicle.getLaneIndex(v) + 3][width - 1 - ind] = traci.vehicle.getSpeed(v) / speedLimit
+            ori_time[traci.vehicle.getLaneIndex(v) + 3][width - 1 - ind] = traci.vehicle.getWaitingTime(v) / 50
+            if (random.uniform(0, 1) < penetration_rate):
+                posMatrix[traci.vehicle.getLaneIndex(v) + 3][width - 1 - ind] = 1
+                velMatrix[traci.vehicle.getLaneIndex(v) + 3][width - 1 - ind] = traci.vehicle.getSpeed(v) / speedLimit
+                timeMatrix[traci.vehicle.getLaneIndex(v) + 3][width - 1 - ind] = traci.vehicle.getWaitingTime(v) / 50
+
+    junctionPosition = traci.junction.getPosition('0')[1]
+
+    for v in vehicles_road3:
+        ind = int(
+            abs((junctionPosition - traci.vehicle.getPosition(v)[1] - offset)) / cellLength)
+        if (ind < width):
+            ori_posM[traci.vehicle.getLaneIndex(v) + 6][width - 1 - ind] = 1
+            ori_velM[traci.vehicle.getLaneIndex(v) + 6][width - 1 - ind] = traci.vehicle.getSpeed(v) / speedLimit
+            ori_time[traci.vehicle.getLaneIndex(v) + 6][width - 1 - ind] = traci.vehicle.getWaitingTime(v) / 50
+            if (random.uniform(0, 1) < penetration_rate):
+                posMatrix[traci.vehicle.getLaneIndex(v) + 6][width - 1 - ind] = 1
+                velMatrix[traci.vehicle.getLaneIndex(v) + 6][width - 1 - ind] = traci.vehicle.getSpeed(v) / speedLimit
+                timeMatrix[traci.vehicle.getLaneIndex(v) + 6][width - 1 - ind] = traci.vehicle.getWaitingTime(v) / 50
+    for v in vehicles_road4:
+        ind = int(
+            abs((-junctionPosition + traci.vehicle.getPosition(v)[1] - offset)) / cellLength)
+        if (ind < width):
+            ori_posM[traci.vehicle.getLaneIndex(v) + 9][width - 1 - ind] = 1
+            ori_velM[traci.vehicle.getLaneIndex(v) + 9][width - 1 - ind] = traci.vehicle.getSpeed(v) / speedLimit
+            ori_time[traci.vehicle.getLaneIndex(v) + 9][width - 1 - ind] = traci.vehicle.getWaitingTime(v) / 50
+            if (random.uniform(0, 1) < penetration_rate):
+                posMatrix[traci.vehicle.getLaneIndex(v) + 9][width - 1 - ind] = 1
+                velMatrix[traci.vehicle.getLaneIndex(v) + 9][width - 1 - ind] = traci.vehicle.getSpeed(v) / speedLimit
+                timeMatrix[traci.vehicle.getLaneIndex(v) + 9][width - 1 - ind] = traci.vehicle.getWaitingTime(v) / 50
+    tposMatrix = torch.tensor(posMatrix, dtype=torch.float64)
+    tvelMatrix = torch.tensor(velMatrix, dtype=torch.float64)
+    ttimeMatrix = torch.tensor(timeMatrix, dtype=torch.float64)
+    tsignalMatrix = torch.tensor(signalMatrix, dtype=torch.float64)
+
+    input1 = torch.stack([tvelMatrix, tposMatrix, ttimeMatrix])
+    print input1.size()
+    input1 = input1.unsqueeze(0)
+    input2 = tsignalMatrix
+    input2 = input2.unsqueeze(0)
+
+    model = cnnModel.CNNv2()
+    model = model.double()
+    model.load_state_dict(torch.load('data/model2_params2_03.pkl'))
+    model.eval()
+    output = model(input1, input2)
+    output = torch.reshape(output, [2, 12, 50])
+    print(output[0])
+    veh_num = []
+    wat_num = []
+    for i in range(12):
+        veh_num.append(torch.sum(output[0][i][:]))
+        wat_num.append(torch.sum(output[0][i][:]))
+
+
+
+
+
+
 
 
 # def updateweightGetTraci():
@@ -456,13 +578,13 @@ def run_collectdata(penetration_rate):
     step = 0
     # we start with phase 2 where EW has green
     traci.trafficlights.setPhase("0", 0)
-    steps = np.random.randint(3200, size=30)
+    steps = np.random.randint(3200, size=50)
     steps = steps.tolist()
 
     while traci.simulation.getMinExpectedNumber() > 0:
         traci.simulationStep()
         if step in steps:
-            output_state(step, penetration_rate)
+            output_weight_v3(step, penetration_rate)
         # phasesrecord.append(traci.trafficlights.getPhase("0"))
 
         # run.updateWeight('w')
@@ -530,9 +652,11 @@ if __name__ == "__main__":
     # sumoProcess = subprocess.Popen([sumoBinary, "-c", "va_data/cross.sumocfg", "--summary-output",
     #                                 "OUTPUT/tripinfo_va.xml", "--remote-port", str(PORT)], stdout=sys.stdout,
     #                                stderr=sys.stderr)
-    # step = run_collectdata()
+    # # step = run_collectdata()
     for i in range(10):
-        run_main(0.7 + i * 0.02)
+        run_main(abs(0.7 + 0.1 * np.random.randn()))
+
+    # run_main(0.7)
 
 # def run():
 #     """execute the TraCI control loop"""

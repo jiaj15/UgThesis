@@ -10,23 +10,26 @@ import matplotlib.pyplot as plt
 from torch.utils.data.sampler import SubsetRandomSampler
 import os
 import time
-#parameter
+
+# parameter
 # EPOCH=p.EPOCH
 # BATCH_SIZE=p.BATCH_SIZE
 # LR=p.LR
 
 torch.manual_seed(1)
 
-class CNN(nn.Module):
+
+class CNNv2(nn.Module):
     def __init__(self):
-        super(CNN, self).__init__()
+        super(CNNv2, self).__init__()
         self.conv1 = nn.Sequential(
             nn.Conv2d(
                 # input shape 2*12*12
-                in_channels=2,
-                out_channels=32,
-                kernel_size= 4,
-                stride =2
+                in_channels=3,
+                out_channels=48,
+                kernel_size=5,
+                stride=1,
+                padding=2
                 # output shape 32,12,12
 
             ),
@@ -35,21 +38,23 @@ class CNN(nn.Module):
         self.conv2 = nn.Sequential(
             nn.Conv2d(
                 # input shape 32, 12, 12
-                in_channels=32,
-                out_channels=64,
-                kernel_size= 2,
-                stride =1
+                in_channels=48,
+                out_channels=96,
+                kernel_size=3,
+                stride=1,
+                padding=1
 
                 # output shape 64, 4 ,4
 
             ),
             nn.ReLU()
         )
+
         self.fc = nn.Sequential(
-            nn.Linear(2572, 1024),
+            nn.Linear(57612, 1024),
             nn.ReLU(),
             nn.Dropout(0.2),
-            nn.Linear(1024, 12 * 25 * 1)
+            nn.Linear(1024, 12 * p.WIDTH * 2)
 
         )
 
@@ -68,7 +73,7 @@ class CNN(nn.Module):
         return y
 
 
-class sumoDataSet(Dataset):
+class sumoDataSetv2(Dataset):
     def __init__(self, csv_file, root_dir, transform=None):
         """
         Args:
@@ -95,24 +100,33 @@ class sumoDataSet(Dataset):
         pos_matrix_name = self.sumodata_frame.iloc[idx, 1]
         pos_matrix = pd.read_csv(pos_matrix_name, index_col=0, dtype=np.float64)
         Pmatrice = torch.from_numpy(pos_matrix.values)
+
+        tim_matrix_name = self.sumodata_frame.iloc[idx, 2]
+        tim_matrix = pd.read_csv(tim_matrix_name, index_col=0, dtype=np.float64)
+        Tmatrice = torch.from_numpy(tim_matrix.values)
         # Pmatrice = torch.reshape(torch.from_numpy(pos_matrix.values),[1,25,12])
 
-        vehicle_matrix = torch.stack([Vmatrice, Pmatrice])
+        vehicle_matrix = torch.stack([Vmatrice, Pmatrice, Tmatrice])
 
         # print(vehicle_matrix)
-        sam_vel_matrix_name = self.sumodata_frame.iloc[idx, 2]
+        sam_vel_matrix_name = self.sumodata_frame.iloc[idx, 3]
         sam_vel_matrix = pd.read_csv(sam_vel_matrix_name, index_col=0, dtype=np.float64)
         SVmatrice = torch.from_numpy(sam_vel_matrix.values)
 
         # Vmatrice = torch.reshape(torch.from_numpy(vel_matrix.values),[1,25,12])
-        sam_pos_matrix_name = self.sumodata_frame.iloc[idx, 3]
+        sam_pos_matrix_name = self.sumodata_frame.iloc[idx, 4]
         sam_pos_matrix = pd.read_csv(sam_pos_matrix_name, index_col=0, dtype=np.float64)
         SPmatrice = torch.from_numpy(sam_pos_matrix.values)
+
+        sam_tim_matrix_name = self.sumodata_frame.iloc[idx, 5]
+        sam_tim_matrix = pd.read_csv(sam_tim_matrix_name, index_col=0, dtype=np.float64)
+        STmatrice = torch.from_numpy(sam_tim_matrix.values)
+
         # Pmatrice = torch.reshape(torch.from_numpy(pos_matrix.values),[1,25,12])
 
-        # sam_vehicle_matrix= torch.stack([SVmatrice,SPmatrice])
+        sam_vehicle_matrix = torch.stack([SPmatrice, STmatrice])
 
-        signal_name = self.sumodata_frame.iloc[idx, 4]
+        signal_name = self.sumodata_frame.iloc[idx, 6]
         signal = pd.read_csv(signal_name, index_col=0, dtype=np.float64)
         signal_matrix = torch.from_numpy(signal.values)
 
@@ -121,7 +135,7 @@ class sumoDataSet(Dataset):
         # landmarks = landmarks.astype('float').reshape(-1, 2)
         #
 
-        sample = {'vehicle': vehicle_matrix, 'Signal': signal_matrix, 'sample': SPmatrice}
+        sample = {'vehicle': vehicle_matrix, 'Signal': signal_matrix, 'sample': sam_vehicle_matrix}
 
         if self.transform:
             sample = self.transform(sample)
@@ -130,11 +144,11 @@ class sumoDataSet(Dataset):
 
 
 def trainNet(LR, BATCH_SIZE, EPOCH):
-    net = CNN()
+    net = CNNv2()
     cnn = net.double()
     validation_split = .2
 
-    dataset = sumoDataSet(root_dir="data/output/", csv_file="data/output/sumo_trainingset.csv")
+    dataset = sumoDataSetv2(root_dir="data/output2/", csv_file="data/output2/sumo_trainingset.csv")
     # testset = sumoDataSet(root_dir="data/output/", csv_file="data/output/sumo_trainingset.csv")
     dataset_size = len(dataset)
     indices = list(range(dataset_size))
@@ -158,12 +172,17 @@ def trainNet(LR, BATCH_SIZE, EPOCH):
 
     print 'data loaded'
 
-    optimizer = torch.optim.SGD(cnn.parameters(), lr=LR)  # optimize all cnn parameters
+    # optimizer = torch.optim.SGD(cnn.parameters(), lr=LR)  # optimize all cnn parameters
     loss_func = nn.MSELoss()  # the target label is not one-hotted
+    optimizer = torch.optim.SGD(cnn.parameters(), lr=LR)  # optimize all cnn parameters
+    # loss_func = nn.CrossEntropyLoss()  # the target label is not one-hotted
     Losses = []
     ValidationLosses = []
 
     for i in range(EPOCH):
+        train_loss = 0
+        val_loss = 0
+        j = 0
 
         for step, data in enumerate(train_loader, 0):
             vehicle_data = data['vehicle']
@@ -172,14 +191,21 @@ def trainNet(LR, BATCH_SIZE, EPOCH):
             # print(sample_data.size())
 
             output = cnn(vehicle_data, signal_data)
-            output = torch.reshape(output, [output.size()[0], 1, 12, 25])
+            output = torch.reshape(output, [output.size()[0], 2, 12, p.WIDTH])
             loss = loss_func(output, sample_data)
             optimizer.zero_grad()  # clear gradients for this training step
             loss.backward()  # backpropagation, compute gradients
             optimizer.step()  # apply gradients
 
-            print loss.data.numpy()
-            Losses.append(loss.data.numpy())
+            # print loss.data.numpy()
+
+            train_loss = train_loss + loss.data.numpy()
+
+            j = j + 1
+        Losses.append(train_loss / j)
+        print train_loss / j
+        j = 0
+        # Losses.append(loss.data.numpy())
         for step, data in enumerate(validation_loader, 0):
             vehicle_data = data['vehicle']
             signal_data = data['Signal']
@@ -187,31 +213,50 @@ def trainNet(LR, BATCH_SIZE, EPOCH):
             # print(sample_data.size())
 
             output = cnn(vehicle_data, signal_data)
-            output = torch.reshape(output, [output.size()[0], 1, 12, 25])
+            output = torch.reshape(output, [output.size()[0], 2, 12, 50])
             loss = loss_func(output, sample_data)
             optimizer.zero_grad()  # clear gradients for this training step
             # loss.backward()  # backpropagation, compute gradients
             # optimizer.step()  # apply gradients
             # if step%2==0:
             #     test_output=cnn
+            j = j + 1
+            val_loss = val_loss + loss.data.numpy()
+        print "testing"
 
-            print loss.data.numpy()
-            ValidationLosses.append(loss.data.numpy())
+        # print loss.data.numpy()
+        ValidationLosses.append(val_loss / j)
+        print val_loss / j
 
-    torch.save(cnn.state_dict(), 'data/model/model1_params_02.pkl')
+    torch.save(cnn.state_dict(), 'data/model/model2_params2.pkl')
     return Losses, ValidationLosses
 
 
-if __name__ == "__main__":
-    LRS = [0.2]
-    plt.figure()
+def run_eval(partial_info):
+    model = CNNv2()
+    model.load_state_dict(torch.load('data/model2_params2_03.pkl'))
+    model.eval()
+    output = model(partial_info)
+    output = torch.reshape(output, [2, 12, 50])
 
-    for LR in LRS:
-        loss, val = trainNet(LR, p.BATCH_SIZE, 10)
-        x = len(loss)
-        xo = len(val)
-        xn = range(x / xo, x - x % xo + x / xo, x / xo)
-        plt.plot(range(x), loss, label='training')
-        plt.plot(xn, val, label='validation')
-    plt.legend()
-    plt.show()
+    return output
+
+
+if __name__ == "__main__":
+    # cnn=CNNv2()
+    # X1=torch.tensor()
+    # LRS = [0.3,0.1,0.01,0.001]
+    # plt.figure()
+    #
+    # for LR in LRS:
+    #     loss, val = trainNet(LR, p.BATCH_SIZE, 50)
+    #     plt.plot(loss, label='training, learning rate='+str(LR))
+    #     plt.plot(val,  label='testing , learning rate='+str(LR))
+    #     # x = len(loss)
+    #     # xo = len(val)
+    #     # xn = range(x, x / xo)
+    #     # plt.plot(range(x), loss, label='training')
+    #     # plt.plot(xn, val, label='validation')
+    # plt.legend()
+    # plt.show()
+    run_eval()

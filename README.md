@@ -108,21 +108,36 @@
  
  
  ### state estimation
- 网络结构： 两层卷积+两层全链接
+ #### 网络结构： 两层卷积+两层全链接
  
- 网络输入： 考虑PENETRATION RATE的速度和位置矩阵
  
- 网络输出： 12个方向的QUEUE LENGTH(12*1)和WAITING TIME(12*1)
  
- 训练集： 0.7-0.9（间隔0.01）， 流量固定， 
+ 网络输入 v1： 考虑PENETRATION RATE的速度和位置矩阵
+ 
+ 网络输出 v1： 全局的速度和位置矩阵
+ 
+ 初步训练用的数据集比较小，大概50-300个，SGD optim LR=0.2 loss大概会从0.15减小到0.05
+ 
+ 几个问题：0.05的loss是否足够，输出对于图结构的更新是否有用
+ 
+ &darr;
+ 
+ 网络输入 v2： 考虑PENETRATION RATE的速度和位置矩阵 
+ 
+ 网络输出 v2： 12个方向的vehicle position(12,1 or 25)和WAITING TIME(12,1 or 25): (12,25,2)
+ 
+ 训练
+ 
+ 训练集： 0.7， 流量固定， 800 training set
  
     采集的方法：
-    for penetration rate in 0.7-0.9
+    for penetration rate in 0.7+0.1rand
         generate new route file
         sumo
         collect 50 screenshots randomly
-    output: 20*50 training sets
- 
+    output: 10*50 training sets
+ 测试集：200
+ loss 0.03
  
  
  
