@@ -4,6 +4,7 @@ import sys
 import optparse
 import subprocess
 import random
+import generate_route as groute
 import run
 import matplotlib.pyplot as plt
 import pandas
@@ -39,6 +40,7 @@ def record_queuelength():
 
     results.append(result)
 def run_bench():
+    groute.generate_routefile_v4("va_data/cross.rou.xml", 24, 26)
     global phasesrecord
 
     traci.init(PORT)
@@ -83,16 +85,16 @@ if __name__ == "__main__":
     # generate_routefile()
 
     # this is the normal way of using traci. sumo is started as a
-    # subprocess and then the python script connects and runs
+    # subprocess and then the python script connects and runs --summary-output
     sumoProcess = subprocess.Popen([sumoBinary, "-c", "va_data/cross.sumocfg", "--summary-output",
-                                    "OUTPUT/tripinfo_va.xml", "--remote-port", str(PORT)], stdout=sys.stdout,
+                                    "OUTPUT/tripinfo_benchmark.xml", "--remote-port", str(PORT)], stdout=sys.stdout,
                                    stderr=sys.stderr)
     step = run_bench()
     x = range(step)
     y = []
     for phase in phasesrecord:
         y.append(int(phase))
-    # y=phasesrecord
+    y = phasesrecord
 
     data_f = pandas.DataFrame(y, x)
     filename_da = "OUTPUT/benchmark_phaseRecord.csv"
@@ -101,5 +103,5 @@ if __name__ == "__main__":
     plt.show()
 
     data_j = pandas.DataFrame({"queue length": results, "steps": x})
-    filename_ql = "data/output/31-r.csv"
+    filename_ql = "data/output/135-r.csv"
     data_j.to_csv(filename_ql, mode="w+")

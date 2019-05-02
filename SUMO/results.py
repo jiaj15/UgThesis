@@ -76,7 +76,7 @@ def PlotResults():
     label_list=[]
     mean_dict={}
 
-    dic = {'v': 'volume', 'w': 'queue length', 'r': 'Benchmark'}
+    dic = {'v': 'traffic volume', 'w': 'waiting time', 'r': ', Benchmark ', 'q': ', MWIS w=queue length, p=0.7'}
     path='/home/jing/PycharmProjects/sumo_demo/UgThesis/SUMO/data/output'
     names=os.listdir(path)
     flag =True
@@ -90,7 +90,7 @@ def PlotResults():
         # steps= data_f.index
         label= os.path.splitext(csv_name)[0]
         labels=label.split('-',1)
-        label = "circle= " + labels[0] + 's ' + dic[labels[1]]
+        label = "cyrcle time = " + labels[0] + 's ' + dic[labels[1]]
         label_list.append(label)
         if flag:
             data={'steps':steps,label:waiting}
@@ -109,9 +109,66 @@ def PlotResults():
         # data_f.plot()
         # print csv_name
 
-    plt.title("Queue length")
+    # plt.title("Queue length")
+    plt.xlabel('step/s')
+    plt.ylabel('Queue Length')
 
     plt.legend(label_list)
+    plt.show()
+
+    # print mean_dict
+    # lists=sorted(mean_dict.items())
+    # x, y = zip(*lists) # unpack a list of pairs into two tuples
+    #
+    # plt.plot(x, y)
+    # plt.show()
+
+    # plt.plot(df.mean)
+
+
+def PlotResults_2():
+    label_list = []
+    mean_dict = {}
+
+    dic = {'v': 'traffic volume', 'w': 'waiting time', 'r': ',Benchmark', 'q': 'queue length'}
+    path = '/home/jing/PycharmProjects/sumo_demo/UgThesis/SUMO/data/output'
+    names = os.listdir(path)
+    flag = True
+    for csv_name in names:
+        data_f = pd.read_csv(path + '/' + csv_name)
+
+        waiting = data_f['queue length']
+
+        steps = data_f['steps']
+        # waitplot=pd.DataFrame(waiting,index=data_f.index)
+        # steps= data_f.index
+        label = os.path.splitext(csv_name)[0]
+        labels = label.split('-', 1)
+
+        # label = "cyrcle time = " + labels[0] + 's ' + dic[labels[1]]
+        label_list.append(label)
+        if flag:
+            data = {'steps': steps, label: waiting}
+            df = pd.DataFrame(data)
+            flag = False
+        else:
+            df[label] = waiting
+        # df.plot(x="steps", y=label)
+        plt.plot(steps, waiting)
+
+        # mean_dict[labels[0]]=data_f['Average waiting time'].mean()
+
+        # data_f.plot(x='steps',y='Average waiting time')
+        # plt.figure()
+        # data_f.plot()
+        # print csv_name
+
+    # plt.title("Queue length")
+    plt.xlabel('step/s')
+    plt.ylabel('Queue Length/vehs')
+
+    plt.legend(label_list)
+
     plt.show()
 
     # print mean_dict
@@ -146,4 +203,5 @@ def csvPlot():
             else:
                 df[labela] = waiting
 
-# PlotResults()
+
+PlotResults()

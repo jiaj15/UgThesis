@@ -6,31 +6,30 @@
         <param key="show-detectors" value="false"/>
         <param key="file" value="NULL"/>
         <param key="freq" value="300"/>
-        <phase duration="31" minDur="5" maxDur="45" state="grrrgGrrgrrrgGrr"/>
-        <phase duration="6" minDur="5" maxDur="45" state="grrrgrrrgrrrgGGr"/>
-        <phase duration="6" minDur="5" maxDur="45" state="grrrgGGrgrrrgrrr"/>
-        <phase duration="31" minDur="5" maxDur="45" state="grrrgrGrgrrrgrGr"/>
+        <phase duration="34" minDur="5" maxDur="51" state="grrrgGrrgrrrgGrr"/>
+        <phase duration="4" minDur="4" maxDur="4" state="grrrgGrrgrrrgYrr"/>
 
-        <phase duration="2" minDur="1" maxDur="10" state="grrrgryrgrrrgryr"/>
+        <phase duration="14" minDur="5" maxDur="41" state="grrrgGGrgrrrgrrr"/>
+        <phase duration="4" minDur="4" maxDur="4" state="grrrgYGrgrrrgrrr"/>
 
+        <phase duration="7" minDur="5" maxDur="15" state="grrrgrGrgrrrgrGr"/>
+        <phase duration="4" minDur="4" maxDur="4" state="grrrgrYrgrrrgrYr"/>
 
-        <phase duration="31" minDur="5" maxDur="45" state="gGrrgrrrgGrrgrrr"/>
-        <phase duration="6" minDur="5" maxDur="45" state="gGGrgrrrgrrrgrrr"/>
-        <phase duration="6" minDur="5" maxDur="45" state="grrrgrrrgGGrgrrr"/>
-        <phase duration="31" minDur="5" maxDur="45" state="grGrgrrrgrGrgrrr"/>
+        <phase duration="2" minDur="2" maxDur="2" state="grrrgrrrgrrrgrrr"/>
 
-        <phase duration="2" minDur="1" maxDur="10" state="gryrgrrrgryrgrrr"/>
+        <phase duration="21" minDur="5" maxDur="31" state="gGrrgrrrgGrrgrrr"/>
+        <phase duration="4" minDur="4" maxDur="4" state="gYrrgrrrgGrrgrrr"/>
+
+        <phase duration="5" minDur="5" maxDur="31" state="grrrgrrrgGGrgrrr"/>
+        <phase duration="4" minDur="4" maxDur="4" state="grrrgrrrgYGrgrrr"/>
+
+        <phase duration="9" minDur="5" maxDur="31" state="grGrgrrrgrGrgrrr"/>
+        <phase duration="4" minDur="4" maxDur="4" state="grYrgrrrgrYrgrrr"/>
+
+        <phase duration="2" minDur="2" maxDur="2" state="grrrgrrrgrrrgrrr"/>
 
 
     </tlLogic>
-    <inductionLoop id="1i_1" lane="1i_1" pos="350" freq="900" file="out.xml"/>
-    <inductionLoop id="1i_2" lane="1i_2" pos="350" freq="900" file="out.xml"/>
-    <inductionLoop id="2i_1" lane="2i_1" pos="350" freq="900" file="out.xml"/>
-    <inductionLoop id="2i_2" lane="2i_2" pos="350" freq="900" file="out.xml"/>
-    <inductionLoop id="3i_1" lane="3i_1" pos="350" freq="900" file="out.xml"/>
-    <inductionLoop id="3i_2" lane="3i_2" pos="350" freq="900" file="out.xml"/>
-    <inductionLoop id="4i_1" lane="4i_1" pos="350" freq="900" file="out.xml"/>
-    <inductionLoop id="4i_2" lane="4i_2" pos="350" freq="900" file="out.xml"/>
 
 
 </additional>

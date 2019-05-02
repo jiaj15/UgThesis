@@ -10,14 +10,14 @@ pNE = 1. / 30
 pES = 1. / 10
 pSW = 1. / 30
 
-precord = {"1": [1 / 9, 1 / 9, 1 / 10, 1 / 10, 1 / 30, 1 / 30, 1 / 30, 1 / 30]}
+# precord = {"1": [1 / 9, 1 / 9, 1 / 10, 1 / 10, 1 / 30, 1 / 30, 1 / 30, 1 / 30]}
 # pWS = 1. / 20
 # pSE = 1. / 10
 # pEN = 1. / 20
 # pNW = 1. / 10
 
-YELLOW_TIME = 3
-PENETRATION_RATE = 9. / 10
+YELLOW_TIME = 4
+PENETRATION_RATE = 7. / 10
 WIDTH = 50
 
 # <vType id="SUMO_DEFAULT_TYPE"
@@ -44,5 +44,5 @@ SPEEDLIMIT = 14  #
 # CNN
 
 EPOCH = 4
-BATCH_SIZE = 5
+BATCH_SIZE = 50  # type: int
 LR = 0.1

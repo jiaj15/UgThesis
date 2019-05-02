@@ -50,9 +50,9 @@ class Vertices:
     def updateWeight_v1(self, weight, standard):
         self.weight = weight[self.ID]
         if self.curState == 'g':
-            if self.Gtime < 50:
+            if self.Gtime < 55:
                 if self.weight is not 0:
-                    self.weight = self.weight + (50 - self.Gtime)
+                    self.weight = self.weight + (55 - self.Gtime)
 
     def updateWeight_v2(self, weight, standard):
         self.weight = weight[self.ID]

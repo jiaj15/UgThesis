@@ -10,6 +10,7 @@ import graph
 import results as rs
 import pandas as pd
 import matplotlib.pyplot as plt
+import collect_jinan as collectdata
 
 random.seed(42)  # make tests reproducible
 # we need to import python modules from the $SUMO_HOME/tools directory
@@ -33,15 +34,13 @@ import traci
 PORT = 8873
 
 
-
-
-
-def updateWeight(standard):
+def updateWeight(standard, queuelength):
     global results, PHASERECORD, xsteps, step
     weight = []
     weight.append(0)
     x = locals()
     results_step = []
+    weight = queuelength
 
     for j in p.GRAPH_DIC:
         jroute = p.GRAPH_DIC[j]
@@ -52,27 +51,32 @@ def updateWeight(standard):
 
             results_step.append(klane)  # saving results
 
-            if standard == 'w':
-                w = w + klane.queuelength
+            # if standard == 'q':
+            #     w = w + klane.queuelength
+            #
+            # if standard == 'v':
+            #     w = w + klane.traffic_volume
+            #
+            # if standard == 'w':
+            #     w = w + klane.AverageWaitingTime
 
-            if standard == 'v':
-                w = w + klane.traffic_volume
-
-            if standard == 'vw':
-                w = w + klane.AverageWaitingTime + klane.traffic_volume
-
-        weight.append(w)
+    #     weight.append(w)
     results.append(results_step)
 
     orlight = 'grrrgrrrgrrrgrrr'
     orlight = list(orlight)
 
     trans = {1: [2, 3], 2: [1], 3: [14, 15], 4: [13], 5: [10, 11], 6: [9], 7: [6, 7], 8: [5]}
-    print weight
+    print 'wei', weight
+    weight2 = g.updateGraphWeight(weight, standard)
+    print 'wei', weight2
 
-    minst, PHASEINDEX = graph.MWIS(weight)
+    minst, PHASEINDEX = graph.MWIS(weight2)
     PHASERECORD.append(PHASEINDEX)
     xsteps.append(step)
+    print step
+
+    g.updateGraphState(minst)
 
     print minst
 
@@ -106,13 +110,13 @@ def updatePlusPenalty(standard):
             results_step.append(klane)  # saving results
 
             if standard == 'v':
-                w = w + klane.AverageWaitingTime
+                w = w + klane.traffic_volume
 
-            if standard == 'w':
+            if standard == 'q':
                 w = w + klane.queuelength
 
-            if standard == 'vw':
-                w = w + klane.AverageWaitingTime + klane.traffic_volume
+            if standard == 'w':
+                w = w + klane.AverageWaitingTime
 
         weight.append(w)
     results.append(results_step)
@@ -143,6 +147,45 @@ def updatePlusPenalty(standard):
     print light
     return light
 
+
+def updatePlusPenaltyCNN(standard, veh_num):
+    global g
+
+    global results, PHASERECORD, xsteps
+    weight = []
+    weight.append(0)
+    x = locals()
+    results_step = []
+
+    if standard == 'v':
+        weight = veh_num
+    # if standard == 'w':
+    #     weight = wat_num
+    orlight = 'grrrgrrrgrrrgrrr'
+    orlight = list(orlight)
+
+    trans = {1: [2, 3], 2: [1], 3: [14, 15], 4: [13], 5: [10, 11], 6: [9], 7: [6, 7], 8: [5]}
+    print weight
+    # weight2 = g.updateGraphWeight(weight, standard)
+
+    minst, PHASEINDEX = graph.MWIS(weight)
+    PHASERECORD.append(PHASEINDEX)
+    xsteps.append(step)
+    print step
+
+    g.updateGraphState(minst)
+
+    print minst
+
+    for i in minst:
+        for j in trans[i]:
+            orlight[j] = 'g'
+    light = orlight[0]
+    for k in range(1, len(orlight)):
+        light = light + orlight[k]
+
+    print light
+    return light
 
 def transTraci(light, prelight):
     flag = False
@@ -186,8 +229,11 @@ def run(cycle, standard):
         else:
 
             if step % cycle == 0:
+                queuelength = collectdata.output_weight_jinan_v3(step, p.PENETRATION_RATE)
+                # veh_num,wat_num=collectdata.output_weight_v3(step,0.7)
                 # nextlight = updateWeight(standard)
-                nextlight = updatePlusPenalty(standard)
+                # nextlight = updatePlusPenalty(standard)
+                nextlight = updateWeight(standard, queuelength)
                 curlight, flag = transTraci(nextlight, curlight)  # yellow state
                 traci.trafficlights.setRedYellowGreenState("0", curlight)
 
@@ -239,7 +285,7 @@ if __name__ == "__main__":
     #                                 "tripinfo.xml", "--remote-port", str(PORT)], stdout=sys.stdout, stderr=sys.stderr)
 
     cycle = [5]
-    stand = ['w']
+    stand = ['q']
     # graph=[]
     for i in cycle:
         for j in stand:
@@ -260,8 +306,8 @@ if __name__ == "__main__":
                 sumoBinary = checkBinary('sumo')
             else:
                 sumoBinary = checkBinary('sumo-gui')
-            sumoProcess = subprocess.Popen([sumoBinary, "-c", "data/cross.sumocfg", "--tripinfo-output",
-                                            "OUTPUT/" + name, "--remote-port", str(PORT)], stdout=sys.stdout,
+            sumoProcess = subprocess.Popen([sumoBinary, "-c", "va_data/cross.sumocfg", "--tripinfo-output",
+                                            "OUTPUT/trip_info" + name, "--remote-port", str(PORT)], stdout=sys.stdout,
                                            stderr=sys.stderr)
 
             run(i, j)

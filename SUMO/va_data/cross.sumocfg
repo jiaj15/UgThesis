@@ -3,7 +3,7 @@
  <input>
  <net-file value="cross.net.xml"/>
  <route-files value="cross.rou.xml"/>
- <additional-files value="cross.add.xml"/>
+ <additional-files value="cross3.add.xml"/>
  </input>
  
  <time>
